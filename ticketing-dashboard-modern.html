@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Ticketing Dashboard</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:400,600,700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background: #f6f8fa;
+            color: #222;
+            margin: 0;
+        }
+        .dashboard-layout {
+            display: flex;
+            min-height: 100vh;
+            background: #f6f8fa;
+        }
+        .sidebar {
+            width: 220px;
+            min-width: 56px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 2px 0 8px rgba(102,126,234,0.08);
+            position: sticky;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 20;
+            border-radius: 0 20px 20px 0;
+            padding: 32px 0 32px 0;
+            transition: width 0.2s, min-width 0.2s;
+        }
+        .sidebar.minimized {
+            width: 56px !important;
+            min-width: 56px !important;
+            padding: 16px 0 16px 0 !important;
+            align-items: flex-start;
+        }
+        .sidebar h2 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 32px;
+            letter-spacing: 1px;
+            transition: opacity 0.2s;
+        }
+        .sidebar.minimized h2 {
+            opacity: 0;
+            height: 0;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            width: 100%;
+        }
+        .sidebar li {
+            padding: 16px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: background 0.2s, font-size 0.2s, padding 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .sidebar li i {
+            min-width: 20px;
+            text-align: center;
+            font-size: 16px;
+        }
+        .sidebar li span {
+            white-space: nowrap;
+        }
+        .sidebar li:hover {
+            background: rgba(255,255,255,0.15);
+        }
+        .sidebar.minimized li {
+            padding: 12px 8px;
+            text-align: center;
+            font-size: 0;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .sidebar.minimized li i {
+            font-size: 18px;
+            color: #fff;
+            display: block;
+        }
+        .sidebar li i {
+            display: none;
+        }
+        .sidebar.minimized li i {
+            display: inline-block;
+        }
+        #sidebarToggle {
+            transition: left 0.2s, right 0.2s, transform 0.2s;
+            position: absolute;
+            top: 18px;
+            right: -18px;
+            left: auto;
+            z-index: 21;
+            background: #fff;
+            color: #7b7ce6;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .sidebar.minimized #sidebarToggleIcon {
+            transform: rotate(180deg);
+        }
+        .sidebar-logo {
+            width: 100%;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            transition: all 0.2s ease;
+            overflow: hidden;
+        }
+        .sidebar-logo img {
+            height: 40px;
+            max-width: 140px;
+            object-fit: contain;
+            transition: all 0.2s ease;
+        }
+        .sidebar.minimized .sidebar-logo {
+            justify-content: center;
+            padding: 12px 8px;
+        }
+        .sidebar.minimized .sidebar-logo img {
+            height: 28px;
+            max-width: 28px;
+        }
+        .main-content {
+            flex: 1;
+            padding: 40px 40px 40px 0;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-width: 0;
+        }
+        .sidebar h2 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 32px;
+            letter-spacing: 1px;
+        }
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            width: 100%;
+        }
+        .sidebar li {
+            padding: 16px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: background 0.2s;
+        }
+        .sidebar li:hover {
+            background: rgba(255,255,255,0.15);
+        }
+        .main-content {
+            flex: 1;
+            padding: 24px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        .header .admin-info {
+            font-size: 16px;
+            color: #444;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2.5fr 1fr;
+            gap: 24px;
+        }
+        .chart-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr;
+            gap: 12px;
+        }
+        .chart-card {
+            background: #f9fafc;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(102,126,234,0.06);
+            padding: 10px 8px 8px 8px;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .chart-card h3 {
+            font-size: 13px;
+            font-weight: 600;
+            color: #764ba2;
+            margin-bottom: 4px;
+            text-align: center;
+        }
+        .chart-legend {
+            margin-top: 4px;
+            font-size: 11px;
+            text-align: center;
+        }
+        .chart-card {
+            background: #f9fafc;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(102,126,234,0.06);
+            padding: 12px;
+            min-width: 0;
+        }
+        .chart-card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #764ba2;
+            margin-bottom: 8px;
+        }
+        .stats-section {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border-radius: 10px;
+            padding: 20px 24px;
+            text-align: left;
+            box-shadow: 0 2px 8px rgba(102,126,234,0.08);
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .filter-bar {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .filter-bar select {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            font-size: 15px;
+            background: #f5f7fa;
+        }
+        @media (max-width: 900px) {
+            .compact-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 600px) {
+            .compact-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+        .compact-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+        .compact-stats .stat-card {
+            padding: 10px 8px;
+            min-width: 0;
+            margin-bottom: 0;
+        }
+        .compact-stats .stat-number {
+            font-size: 1.7rem;
+        }
+        .compact-stats .stat-label {
+            font-size: 0.97rem;
+        }
+            .container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                border-radius: 16px 16px 0 0;
+                flex-direction: row;
+                padding: 16px 0;
+                justify-content: center;
+            }
+            .main-content {
+                padding: 12px;
+            }
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            .chart-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <style>
+/* Sidebar always left, collapsible, overlays on mobile */
+.container {
+    display: flex;
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(102,126,234,0.08);
+    position: relative;
+}
+.sidebar {
+    width: 200px;
+    min-width: 56px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border-radius: 16px 0 0 16px;
+    padding: 32px 0 32px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 2px 0 8px rgba(102,126,234,0.08);
+    position: relative;
+    transition: width 0.2s, min-width 0.2s;
+    z-index: 20;
+}
+.sidebar.minimized {
+    width: 56px !important;
+    min-width: 56px !important;
+    padding: 16px 0 16px 0 !important;
+    align-items: flex-start;
+}
+.sidebar.minimized h2, .sidebar.minimized #sidebarTitle {
+    display: none;
+}
+.sidebar.minimized ul {
+    padding: 0;
+}
+.sidebar.minimized li {
+    padding: 12px 8px;
+    text-align: center;
+    font-size: 0;
+    position: relative;
+}
+.sidebar.minimized li:before {
+    content: attr(data-short);
+    font-size: 18px;
+    color: #fff;
+    display: block;
+}
+.sidebar li {
+    transition: font-size 0.2s, padding 0.2s;
+}
+#sidebarToggle {
+    transition: left 0.2s, right 0.2s, transform 0.2s;
+    position: absolute;
+    top: 18px;
+    right: -18px;
+    left: auto;
+    z-index: 21;
+}
+.sidebar.minimized #sidebarToggle {
+    right: -18px;
+    left: auto;
+    transform: rotate(180deg);
+}
+/* Overlay for mobile when sidebar open */
+@media (max-width: 800px) {
+    .container {
+        flex-direction: row;
+    }
+    .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100vh;
+        border-radius: 0 16px 16px 0;
+        box-shadow: 2px 0 16px rgba(102,126,234,0.18);
+    }
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+    }
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.18);
+        z-index: 10;
+    }
+    .sidebar.open + .sidebar-overlay {
+        display: block;
+    }
+}
+</style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <img id="companyLogo" src="./rrfx.avif" alt="RRFX Logo" title="RRFX" style="max-width:100%;height:auto;" />
+            </div>
+            <button id="sidebarToggle" title="Collapse Sidebar" aria-label="Toggle Sidebar">
+                <i id="sidebarToggleIcon" class="fa-solid fa-chevron-left"></i>
+            </button>
+            <h2 id="sidebarTitle">Menu</h2>
+            <ul>
+                <li id="dashboardMenu" style="cursor:pointer;"><i class="fa-solid fa-chart-line"></i> <span>Dashboard</span></li>
+                <li id="ticketsMenu" style="cursor:pointer;"><i class="fa-solid fa-ticket"></i> <span>Tickets</span></li>
+                <li id="agentsMenu" style="cursor:pointer;"><i class="fa-solid fa-users"></i> <span>Agents</span></li>
+                <li id="reportsMenu" style="cursor:pointer;"><i class="fa-solid fa-chart-bar"></i> <span>Reports</span></li>
+                <li id="settingsMenu" style="cursor:pointer;"><i class="fa-solid fa-sliders-h"></i> <span>Settings</span></li>
+            </ul>
+        </aside>
+        <main class="main-content">
+                <div class="header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+                    <h1 style="font-size: 32px; font-weight: 700; color: #667eea;">Ticketing Dashboard</h1>
+                    <div class="admin-info" style="font-size: 16px; color: #444; display: flex; align-items: center; gap: 12px;">
+                    <span>Admin: Modern Team</span>
+                    <span style="background:#667eea;color:#fff;padding:8px 16px;border-radius:8px;font-weight:600;">Admin</span>
+                </div>
+            </div>
+            <div class="filter-bar">
+                <select><option>This Month</option></select>
+                <select><option>All Channels</option></select>
+                <select><option>All Status</option></select>
+                <select><option>All Priorities</option></select>
+            </div>
+            <div class="stats-section compact-stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalTickets">0</div>
+                    <div class="stat-label">Total Tickets</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="openTickets">0</div>
+                    <div class="stat-label">Open Tickets</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="solvedTickets">0</div>
+                    <div class="stat-label">Solved Tickets</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="avgResolution">-</div>
+                    <div class="stat-label">Avg. Resolution (hrs)</div>
+                </div>
+            </div>
+            <div class="chart-section" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+                <div class="chart-card">
+                    <h3>Status Distribution</h3>
+                    <canvas id="statusChart" width="140" height="90"></canvas>
+                    <div class="chart-legend">
+                        <span style="color:#ffe600">■ New</span> &nbsp;
+                        <span style="color:#ff3b3b">■ Open</span> &nbsp;
+                        <span style="color:#667eea">■ Pending</span> &nbsp;
+                        <span style="color:#444">■ On-hold</span> &nbsp;
+                        <span style="color:#56ab2f">■ Solved</span> &nbsp;
+                        <span style="color:#222">■ Closed</span>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <h3>Tickets by Hour</h3>
+                    <canvas id="hourChart" width="140" height="90"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>Tickets by Day</h3>
+                    <canvas id="dayChart" width="140" height="90"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>Channel Distribution</h3>
+                    <canvas id="channelChart" width="140" height="90"></canvas>
+                    <div class="chart-legend"><span style="color:#667eea">■ WEB</span> &nbsp;<span style="color:#764ba2">■ EMAIL</span> &nbsp;<span style="color:#ff6b6b">■ WA</span></div>
+                </div>
+                <div class="chart-card">
+                    <h3>SLA Solved < 24 Jam</h3>
+                    <canvas id="slaChart" width="140" height="90"></canvas>
+                    <div class="chart-legend"><span style="color:#56ab2f">■ SLA < 24h</span> &nbsp;<span style="color:#ff3b3b">■ > 24h</span></div>
+                </div>
+            </div>
+        </div>
+        </main>
+    </div>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Sidebar dropdown for Agents
+        document.addEventListener('DOMContentLoaded', function() {
+            var agentsMenu = document.getElementById('agentsMenu');
+            var dashboardMenu = document.getElementById('dashboardMenu');
+            var ticketsMenu = document.getElementById('ticketsMenu');
+            var settingsMenu = document.getElementById('settingsMenu');
+            var reportsMenu = document.getElementById('reportsMenu');
+            var mainContent = document.querySelector('.main-content');
+            agentsMenu.addEventListener('click', function(e) {
+                e.preventDefault();
+                showAgentsPage();
+            });
+            dashboardMenu.addEventListener('click', function(e) {
+                e.preventDefault();
+                showDashboardPage();
+            });
+            ticketsMenu.addEventListener('click', function(e) {
+                e.preventDefault();
+                showTicketsPage();
+            });
+            settingsMenu.addEventListener('click', function(e) {
+                e.preventDefault();
+                showSettingsPage();
+            });
+            reportsMenu.addEventListener('click', function(e) {
+                e.preventDefault();
+                showReportsPage();
+            });
+        });
+        function showReportsPage() {
+            var mainContent = document.querySelector('.main-content');
+            // Dummy data for report
+            const agents = ['Januar Albert','Selli','Melda','Andi','Budi','Citra','Dewi','Eka','Fajar','Gina'];
+            const statuses = ['new','open','pending','on-hold','solved','closed'];
+            const channels = ['WA','Web','Email'];
+            let tickets = [];
+            for(let i=0;i<40;i++){
+                let createdAt = new Date(Date.now()-Math.random()*10*24*60*60*1000);
+                let firstReplyMinutes = Math.floor(Math.random()*180)+5;
+                let firstReply = new Date(createdAt.getTime()+firstReplyMinutes*60*1000);
+                let duration = firstReplyMinutes;
+                tickets.push({
+                    id: 'TK-'+(300+i),
+                    status: statuses[Math.floor(Math.random()*statuses.length)],
+                    channel: channels[Math.floor(Math.random()*channels.length)],
+                    agent: agents[Math.floor(Math.random()*agents.length)],
+                    createdAt,
+                    firstReply,
+                    duration
+                });
+            }
+            // Summary
+            const statusCount = {};
+            const channelCount = {};
+            let sla24 = 0, slaOver = 0, totalDuration = 0;
+            tickets.forEach(t => {
+                statusCount[t.status] = (statusCount[t.status]||0)+1;
+                channelCount[t.channel] = (channelCount[t.channel]||0)+1;
+                totalDuration += t.duration;
+                if(t.duration<=24*60) sla24++; else slaOver++;
+            });
+            let avgDuration = tickets.length ? (totalDuration/tickets.length).toFixed(1) : '-';
+            let summaryHtml = `<div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:18px;">
+                <div style="background:#667eea;color:#fff;padding:12px 24px;border-radius:10px;font-size:18px;font-weight:600;">Total Tickets: ${tickets.length}</div>`;
+            Object.keys(statusCount).forEach(st => {
+                summaryHtml += `<div style="background:#f5f7fa;color:#764ba2;padding:10px 18px;border-radius:8px;font-size:15px;">${st.charAt(0).toUpperCase()+st.slice(1)}: ${statusCount[st]}</div>`;
+            });
+            Object.keys(channelCount).forEach(ch => {
+                summaryHtml += `<div style="background:#f5f7fa;color:#667eea;padding:10px 18px;border-radius:8px;font-size:15px;">${ch}: ${channelCount[ch]}</div>`;
+            });
+            summaryHtml += `<div style="background:#f5f7fa;color:#222;padding:10px 18px;border-radius:8px;font-size:15px;">SLA < 24h: ${sla24}</div>`;
+            summaryHtml += `<div style="background:#f5f7fa;color:#ff3b3b;padding:10px 18px;border-radius:8px;font-size:15px;">SLA > 24h: ${slaOver}</div>`;
+            summaryHtml += `<div style="background:#f5f7fa;color:#667eea;padding:10px 18px;border-radius:8px;font-size:15px;">Avg. First Reply: ${avgDuration} min</div></div>`;
+
+            // Table
+            let tableHtml = `<div class="header"><h1>Ticketing Report</h1></div>` + summaryHtml + `
+            <div style="margin-bottom:18px;">
+                <button onclick="window.print()" style="background:#764ba2;color:#fff;padding:10px 20px;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;margin-right:12px;">Download as PDF</button>
+                <button id="downloadExcelBtn" style="background:#56ab2f;color:#fff;padding:10px 20px;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;">Download as Excel</button>
+            </div>
+            <div style="overflow-x:auto;background:#f9fafc;border-radius:12px;padding:16px 24px;box-shadow:0 2px 8px rgba(102,126,234,0.06);">
+            <table id="reportTable" style="width:100%;border-collapse:collapse;font-size:15px;">
+                <thead>
+                    <tr style="background:#667eea;color:#fff;">
+                        <th style="padding:8px 12px;border-radius:8px 0 0 8px;">Ticket ID</th>
+                        <th style="padding:8px 12px;">Status</th>
+                        <th style="padding:8px 12px;">Channel</th>
+                        <th style="padding:8px 12px;">Agent</th>
+                        <th style="padding:8px 12px;">Created At</th>
+                        <th style="padding:8px 12px;">First Reply</th>
+                        <th style="padding:8px 12px;border-radius:0 8px 8px 0;">Duration (min)</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+            tickets.forEach(t => {
+                tableHtml += `<tr style="background:#fff;border-bottom:1px solid #eee;">
+                    <td style="padding:8px 12px;">${t.id}</td>
+                    <td style="padding:8px 12px;text-transform:capitalize;">${t.status}</td>
+                    <td style="padding:8px 12px;">${t.channel}</td>
+                    <td style="padding:8px 12px;">${t.agent}</td>
+                    <td style="padding:8px 12px;">${t.createdAt.toLocaleString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}</td>
+                    <td style="padding:8px 12px;">${t.firstReply.toLocaleString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}</td>
+                    <td style="padding:8px 12px;">${t.duration}</td>
+                </tr>`;
+            });
+            tableHtml += `</tbody></table></div>`;
+            mainContent.innerHTML = tableHtml;
+            // Excel download
+            setTimeout(()=>{
+                const btn = document.getElementById('downloadExcelBtn');
+                if(btn){
+                    btn.onclick = function(){
+                        let table = document.getElementById('reportTable');
+                        let html = table.outerHTML.replace(/ /g, '%20');
+                        let a = document.createElement('a');
+                        a.href = 'data:application/vnd.ms-excel,' + html;
+                        a.download = 'ticketing-report.xls';
+                        a.click();
+                    }
+                }
+            }, 500);
+        }
+        function showSettingsPage() {
+            var mainContent = document.querySelector('.main-content');
+            const agents = ['Januar Albert','Selli','Melda','Andi','Budi','Citra','Dewi','Eka','Fajar','Gina'];
+            mainContent.innerHTML = `
+                <div class="header"><h1>Settings</h1></div>
+                <form style="background:#f9fafc;border-radius:12px;padding:24px 32px;box-shadow:0 2px 8px rgba(102,126,234,0.06);max-width:480px;">
+                    <div style="margin-bottom:24px;">
+                        <label style="font-weight:600;color:#667eea;">Auto-close Ticket After (hours):</label><br>
+                        <input type="number" min="1" max="168" value="24" style="margin-top:8px;padding:8px 12px;border-radius:6px;border:1px solid #ddd;font-size:16px;width:100px;">
+                    </div>
+                    <div style="margin-bottom:24px;">
+                        <label style="font-weight:600;color:#667eea;">Escalation PIC:</label><br>
+                        <select style="margin-top:8px;padding:8px 12px;border-radius:6px;border:1px solid #ddd;font-size:16px;width:100%;">
+                            ${agents.map(a=>`<option>${a}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div style="margin-bottom:24px;">
+                        <label style="font-weight:600;color:#667eea;">Allow PIC to Close Ticket:</label><br>
+                        <input type="checkbox" checked style="margin-top:8px;"> <span style="font-size:15px;color:#444;">Yes</span>
+                    </div>
+                    <button type="button" style="background:#667eea;color:#fff;padding:10px 24px;border:none;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;">Save Settings</button>
+                </form>
+            `;
+        }
+        function showDashboardPage() {
+            location.reload();
+        }
+        function showTicketsPage() {
+            var mainContent = document.querySelector('.main-content');
+            // Generate 20 dummy tickets with channel, duration, first reply
+            const agents = ['Januar Albert','Selli','Melda','Andi','Budi','Citra','Dewi','Eka','Fajar','Gina'];
+            const statuses = ['new','open','pending','on-hold','solved','closed'];
+            const priorities = ['urgent','high','medium','low'];
+            const channels = ['WA','Web','Email'];
+            let tickets = [];
+            for(let i=0;i<20;i++){
+                let createdAt = new Date(Date.now()-Math.random()*10*24*60*60*1000);
+                let firstReplyMinutes = Math.floor(Math.random()*180)+5; // 5-185 min
+                let firstReply = new Date(createdAt.getTime()+firstReplyMinutes*60*1000);
+                let duration = firstReplyMinutes;
+                tickets.push({
+                    id: 'TK-'+(200+i),
+                    subject: 'Issue '+(i+1),
+                    status: statuses[Math.floor(Math.random()*statuses.length)],
+                    priority: priorities[Math.floor(Math.random()*priorities.length)],
+                    pic: agents[Math.floor(Math.random()*agents.length)],
+                    channel: channels[Math.floor(Math.random()*channels.length)],
+                    createdAt: createdAt,
+                    firstReply: firstReply,
+                    duration: duration
+                });
+            }
+            // Summary calculation
+            const statusCount = {};
+            let totalDuration = 0;
+            tickets.forEach(t => {
+                statusCount[t.status] = (statusCount[t.status]||0)+1;
+                totalDuration += t.duration;
+            });
+            let avgDuration = tickets.length ? (totalDuration/tickets.length).toFixed(1) : '-';
+            let summaryHtml = `<div style="display:flex;gap:32px;align-items:center;margin-bottom:18px;flex-wrap:wrap;">
+                <div style="background:#667eea;color:#fff;padding:12px 24px;border-radius:10px;font-size:18px;font-weight:600;">Total Tickets: ${tickets.length}</div>`;
+            Object.keys(statusCount).forEach(st => {
+                summaryHtml += `<div style="background:#f5f7fa;color:#764ba2;padding:10px 18px;border-radius:8px;font-size:15px;">${st.charAt(0).toUpperCase()+st.slice(1)}: ${statusCount[st]}</div>`;
+            });
+            summaryHtml += `<div style="background:#f5f7fa;color:#667eea;padding:10px 18px;border-radius:8px;font-size:15px;">Avg. First Reply: ${avgDuration} min</div></div>`;
+
+            let tableHtml = `<div class=\"header\"><h1>Tickets</h1></div>` + summaryHtml + `
+            <div style=\"overflow-x:auto;background:#f9fafc;border-radius:12px;padding:16px 24px;box-shadow:0 2px 8px rgba(102,126,234,0.06);\">
+            <table style=\"width:100%;border-collapse:collapse;font-size:15px;\">
+                <thead>
+                    <tr style=\"background:#667eea;color:#fff;\">
+                        <th style=\"padding:8px 12px;border-radius:8px 0 0 8px;\">Ticket ID</th>
+                        <th style=\"padding:8px 12px;\">Subject</th>
+                        <th style=\"padding:8px 12px;\">Status</th>
+                        <th style=\"padding:8px 12px;\">Priority</th>
+                        <th style=\"padding:8px 12px;\">PIC</th>
+                        <th style=\"padding:8px 12px;\">Channel</th>
+                        <th style=\"padding:8px 12px;\">Created At</th>
+                        <th style=\"padding:8px 12px;\">First Reply</th>
+                        <th style=\"padding:8px 12px;\">Duration (min)</th>
+                        <th style=\"padding:8px 12px;border-radius:0 8px 8px 0;\">Action</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+            tickets.forEach((t,idx) => {
+                tableHtml += `<tr style=\"background:#fff;border-bottom:1px solid #eee;\">
+                    <td style=\"padding:8px 12px;\">${t.id}</td>
+                    <td style=\"padding:8px 12px;\">${t.subject}</td>
+                    <td style=\"padding:8px 12px;text-transform:capitalize;\">${t.status}</td>
+                    <td style=\"padding:8px 12px;text-transform:capitalize;\">${t.priority}</td>
+                    <td style=\"padding:8px 12px;\">${t.pic}</td>
+                    <td style=\"padding:8px 12px;\">${t.channel}</td>
+                    <td style=\"padding:8px 12px;\">${t.createdAt.toLocaleString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}</td>
+                    <td style=\"padding:8px 12px;\">${t.firstReply.toLocaleString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}</td>
+                    <td style=\"padding:8px 12px;\">${t.duration}</td>
+                    <td style=\"padding:8px 12px;position:relative;\">
+                        <button onclick=\"showActionMenu(this,${idx})\" style=\"background:#667eea;color:#fff;padding:4px 16px;border:none;border-radius:6px;font-size:14px;cursor:pointer;\">Action ▼</button>
+                        <div class=\"action-dropdown\" style=\"display:none;position:absolute;z-index:10;left:0;top:32px;background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 2px 8px rgba(102,126,234,0.12);min-width:140px;\">
+                            <div onclick=\"showTicketDetail(${idx});hideAllDropdowns();\" style=\"padding:10px 16px;cursor:pointer;\">Lihat Detail</div>
+                            <div onclick=\"showReplyModal(${idx});hideAllDropdowns();\" style=\"padding:10px 16px;cursor:pointer;\">Reply Tiket</div>
+                            <div onclick=\"showStatusModal(${idx});hideAllDropdowns();\" style=\"padding:10px 16px;cursor:pointer;\">Ubah Status</div>
+                        </div>
+                    </td>
+                </tr>`;
+            });
+            tableHtml += `</tbody></table></div>`;
+            // Modal for detail, reply, status
+            tableHtml += `<div id=\"ticketModal\" style=\"display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.25);z-index:9999;align-items:center;justify-content:center;\"><div id=\"ticketModalContent\" style=\"background:#fff;padding:32px 24px;border-radius:12px;min-width:320px;max-width:90vw;box-shadow:0 4px 24px rgba(102,126,234,0.18);position:relative;\"></div></div>`;
+            mainContent.innerHTML = tableHtml;
+            // Dropdown logic
+            window.showActionMenu = function(btn, idx) {
+                hideAllDropdowns();
+                var dd = btn.parentNode.querySelector('.action-dropdown');
+                dd.style.display = dd.style.display==='block' ? 'none' : 'block';
+            }
+            window.hideAllDropdowns = function() {
+                document.querySelectorAll('.action-dropdown').forEach(d=>d.style.display='none');
+            }
+            document.addEventListener('click', function(e){
+                if(!e.target.closest('.action-dropdown') && !e.target.closest('button')) hideAllDropdowns();
+            });
+            // Detail modal
+            window.showTicketDetail = function(idx) {
+                const t = tickets[idx];
+                const modal = document.getElementById('ticketModal');
+                const content = document.getElementById('ticketModalContent');
+                content.innerHTML = `<h2 style='color:#667eea;margin-top:0;'>Ticket Detail</h2>
+                    <table style='width:100%;font-size:15px;'>
+                        <tr><td><b>ID</b></td><td>${t.id}</td></tr>
+                        <tr><td><b>Subject</b></td><td>${t.subject}</td></tr>
+                        <tr><td><b>Status</b></td><td>${t.status}</td></tr>
+                        <tr><td><b>Priority</b></td><td>${t.priority}</td></tr>
+                        <tr><td><b>PIC</b></td><td>${t.pic}</td></tr>
+                        <tr><td><b>Channel</b></td><td>${t.channel}</td></tr>
+                        <tr><td><b>Created At</b></td><td>${t.createdAt.toLocaleString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}</td></tr>
+                        <tr><td><b>First Reply</b></td><td>${t.firstReply.toLocaleString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}</td></tr>
+                        <tr><td><b>Duration (min)</b></td><td>${t.duration}</td></tr>
+                    </table>
+                    <button onclick='document.getElementById("ticketModal").style.display="none"' style='margin-top:18px;background:#ff3b3b;color:#fff;padding:8px 18px;border:none;border-radius:8px;font-size:15px;cursor:pointer;'>Close</button>`;
+                modal.style.display = 'flex';
+                modal.onclick = function(e){ if(e.target===modal) modal.style.display='none'; };
+            }
+            // Reply modal
+            window.showReplyModal = function(idx) {
+                const t = tickets[idx];
+                const modal = document.getElementById('ticketModal');
+                const content = document.getElementById('ticketModalContent');
+                content.innerHTML = `<h2 style='color:#667eea;margin-top:0;'>Reply Tiket</h2>
+                    <div style='margin-bottom:12px;'><b>ID:</b> ${t.id} | <b>Subject:</b> ${t.subject}</div>
+                    <textarea style='width:100%;height:80px;padding:8px 12px;border-radius:6px;border:1px solid #ddd;font-size:15px;' placeholder='Tulis balasan...'></textarea>
+                    <div style='margin-top:18px;text-align:right;'><button onclick='document.getElementById("ticketModal").style.display="none"' style='background:#ff3b3b;color:#fff;padding:8px 18px;border:none;border-radius:8px;font-size:15px;cursor:pointer;margin-right:8px;'>Batal</button><button style='background:#56ab2f;color:#fff;padding:8px 18px;border:none;border-radius:8px;font-size:15px;cursor:pointer;'>Kirim</button></div>`;
+                modal.style.display = 'flex';
+                modal.onclick = function(e){ if(e.target===modal) modal.style.display='none'; };
+            }
+            // Status modal
+            window.showStatusModal = function(idx) {
+                const t = tickets[idx];
+                const modal = document.getElementById('ticketModal');
+                const content = document.getElementById('ticketModalContent');
+                content.innerHTML = `<h2 style='color:#667eea;margin-top:0;'>Ubah Status Tiket</h2>
+                    <div style='margin-bottom:12px;'><b>ID:</b> ${t.id} | <b>Subject:</b> ${t.subject}</div>
+                    <select id='statusSelect' style='width:100%;padding:8px 12px;border-radius:6px;border:1px solid #ddd;font-size:15px;margin-bottom:18px;'>
+                        <option${t.status==='new'?' selected':''}>new</option>
+                        <option${t.status==='open'?' selected':''}>open</option>
+                        <option${t.status==='pending'?' selected':''}>pending</option>
+                        <option${t.status==='on-hold'?' selected':''}>on-hold</option>
+                        <option${t.status==='solved'?' selected':''}>solved</option>
+                        <option${t.status==='closed'?' selected':''}>closed</option>
+                    </select>
+                    <div style='text-align:right;'><button onclick='document.getElementById("ticketModal").style.display="none"' style='background:#ff3b3b;color:#fff;padding:8px 18px;border:none;border-radius:8px;font-size:15px;cursor:pointer;margin-right:8px;'>Batal</button><button id='saveStatusBtn' style='background:#667eea;color:#fff;padding:8px 18px;border:none;border-radius:8px;font-size:15px;cursor:pointer;'>Simpan</button></div>`;
+                modal.style.display = 'flex';
+                modal.onclick = function(e){ if(e.target===modal) modal.style.display='none'; };
+                setTimeout(function(){
+                    document.getElementById('saveStatusBtn').onclick = function() {
+                        var newStatus = document.getElementById('statusSelect').value;
+                        t.status = newStatus;
+                        // Update table cell
+                        var row = document.querySelectorAll('tbody tr')[idx];
+                        if(row) row.children[2].textContent = newStatus.charAt(0).toUpperCase()+newStatus.slice(1);
+                        document.getElementById('ticketModal').style.display = 'none';
+                    }
+                }, 100);
+            }
+        }
+        function showDashboardPage() {
+            location.reload();
+        }
+        function showAgentsPage() {
+            var mainContent = document.querySelector('.main-content');
+            mainContent.innerHTML = `
+                <div class="header">
+                    <h1>Agents</h1>
+                </div>
+                <div style="margin-bottom:24px;">
+                    <h2 style="color:#764ba2;font-size:20px;margin-bottom:12px;">Daftar Agent</h2>
+                    <ul style="background:#f9fafc;border-radius:12px;padding:16px 24px;box-shadow:0 2px 8px rgba(102,126,234,0.06);font-size:16px;">
+                        <li>Januar Albert</li>
+                        <li>Selli</li>
+                        <li>Melda</li>
+                    </ul>
+                </div>
+                <div>
+                    <h2 style="color:#764ba2;font-size:20px;margin-bottom:12px;">Escalate Setting</h2>
+                    <ul style="background:#f9fafc;border-radius:12px;padding:16px 24px;box-shadow:0 2px 8px rgba(102,126,234,0.06);font-size:16px;">
+                        <li>Pic WP <span style="color:#667eea;font-size:13px;">(custom user)</span></li>
+                        <li>Pic Teknis IT <span style="color:#667eea;font-size:13px;">(custom user)</span></li>
+                    </ul>
+                </div>
+            `;
+        }
+        // Data Dummy Realistis
+        const agents = ['Andi','Budi','Citra','Dewi','Eka','Fajar','Gina','Hadi','Ika','Joko'];
+        const priorities = ['urgent','high','medium','low'];
+        const statuses = ['new','open','pending','on-hold','solved','closed'];
+        const channels = ['web','email','wa'];
+        // Generate 60 tickets for 2 weeks
+        function randomDate(start, end) {
+            return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+        }
+        function randomPick(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
+        let ticketsData = [];
+        let now = new Date('2026-02-23T12:00:00Z');
+        for(let i=0;i<60;i++){
+            let createdAt = randomDate(new Date('2026-02-10T00:00:00Z'), now);
+            let status = randomPick(statuses);
+            let resolvedAt = (status==='solved'||status==='closed') ? new Date(createdAt.getTime()+Math.random()*3*24*60*60*1000) : null;
+            ticketsData.push({
+                id: 'TK-'+(100+i),
+                status,
+                priority: randomPick(priorities),
+                channel: randomPick(channels),
+                agent: randomPick(agents),
+                createdAt: createdAt.toISOString(),
+                resolvedAt: resolvedAt ? resolvedAt.toISOString() : null
+            });
+        }
+        // Stats
+        document.getElementById('totalTickets').textContent = ticketsData.length;
+        document.getElementById('openTickets').textContent = ticketsData.filter(t => t.status === 'open').length;
+        document.getElementById('solvedTickets').textContent = ticketsData.filter(t => t.status === 'solved').length;
+        // Avg Resolution
+        const solved = ticketsData.filter(t => t.status === 'solved' && t.resolvedAt && t.createdAt);
+        let avg = '-';
+        if (solved.length > 0) {
+            const hours = solved.map(t => (new Date(t.resolvedAt) - new Date(t.createdAt)) / (1000*60*60));
+            avg = (hours.reduce((a,b)=>a+b,0)/hours.length).toFixed(1);
+        }
+        document.getElementById('avgResolution').textContent = avg;
+        // Chart: Status Distribution
+        const statusLabels = statuses;
+        const statusColors = ['#ffe600','#ff3b3b','#667eea','#444','#56ab2f','#222'];
+        const statusCounts = statusLabels.map(l => ticketsData.filter(t => t.status === l).length);
+        new Chart(document.getElementById('statusChart').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: statusLabels.map(l => l.charAt(0).toUpperCase() + l.slice(1)),
+                datasets: [{
+                    data: statusCounts,
+                    backgroundColor: statusColors,
+                    borderWidth: 2,
+                    hoverOffset: 16
+                }]
+            },
+            options: {
+                plugins: {legend: {position: 'bottom'}},
+                cutout: '70%',
+                responsive: true
+            }
+        });
+        // Chart: Tickets by Hour (Line)
+        const hours = Array.from({length:24},(_,i)=>i);
+        const ticketsByHour = Array(24).fill(0);
+        ticketsData.forEach(t => {
+            const d = new Date(t.createdAt);
+            ticketsByHour[d.getUTCHours()]++;
+        });
+        new Chart(document.getElementById('hourChart').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: hours.map(h=>h.toString().padStart(2,'0')+':00'),
+                datasets: [{
+                    label: 'Tickets',
+                    data: ticketsByHour,
+                    backgroundColor: 'rgba(102,126,234,0.15)',
+                    borderColor: '#667eea',
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#764ba2'
+                }]
+            },
+            options: {
+                plugins: {legend: {display: false}},
+                scales: {y: {beginAtZero: true, ticks: {stepSize: 1, callback:v=>v+''}}},
+                responsive: true
+            }
+        });
+        // Chart: Tickets by Day (Bar)
+        const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+        const ticketsByDay = Array(7).fill(0);
+        ticketsData.forEach(t => {
+            const d = new Date(t.createdAt);
+            ticketsByDay[d.getUTCDay()]++;
+        });
+        new Chart(document.getElementById('dayChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: days,
+                datasets: [{
+                    label: 'Tickets',
+                    data: ticketsByDay,
+                    backgroundColor: '#56ab2f',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                plugins: {legend: {display: false}},
+                scales: {y: {beginAtZero: true, ticks: {stepSize: 1, callback:v=>v+''}}},
+                responsive: true
+            }
+        });
+        // Chart: Channel Distribution (Pie)
+        const channelCounts = channels.map(c => ticketsData.filter(t => t.channel === c).length);
+        const channelColors = ['#667eea','#764ba2','#ff6b6b'];
+        new Chart(document.getElementById('channelChart').getContext('2d'), {
+            type: 'pie',
+            data: {
+                labels: channels.map(c=>c.toUpperCase()),
+                datasets: [{
+                    data: channelCounts,
+                    backgroundColor: channelColors
+                }]
+            },
+            options: {
+                plugins: {legend: {position: 'bottom'}},
+                responsive: true
+            }
+        });
+        // Chart: SLA (solved < 24 jam)
+        const solvedSLA = solved.filter(t => (new Date(t.resolvedAt) - new Date(t.createdAt)) <= 24*60*60*1000).length;
+        const solvedNonSLA = solved.length - solvedSLA;
+        new Chart(document.getElementById('slaChart').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['SLA < 24h','> 24h'],
+                datasets: [{
+                    data: [solvedSLA, solvedNonSLA],
+                    backgroundColor: ['#56ab2f','#ff3b3b']
+                }]
+            },
+            options: {
+                plugins: {legend: {position: 'bottom'}},
+                cutout: '70%',
+                responsive: true
+            }
+        });
+    </script>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Sidebar collapse/expand logic
+    var sidebar = document.getElementById('sidebar');
+    var sidebarToggle = document.getElementById('sidebarToggle');
+    var sidebarOverlay = document.getElementById('sidebarOverlay');
+    var sidebarItems = sidebar.querySelectorAll('ul li');
+    var shortLabels = ['D', 'T', 'A', 'R', 'S'];
+    var iconClasses = ['fa-chart-line', 'fa-ticket', 'fa-users', 'fa-chart-bar', 'fa-sliders-h'];
+    sidebarItems.forEach(function(li, i) {
+        li.setAttribute('data-icon', iconClasses[i] || 'fa-circle');
+    });
+    function closeSidebarMobile() {
+        if(window.innerWidth <= 800) {
+            sidebar.classList.remove('open');
+            sidebar.classList.add('minimized');
+            sidebarOverlay.style.display = 'none';
+        }
+    }
+    var sidebarToggleIcon = document.getElementById('sidebarToggleIcon');
+    sidebarToggle.addEventListener('click', function() {
+        sidebar.classList.toggle('minimized');
+        if (sidebar.classList.contains('minimized')) {
+            sidebarToggle.title = 'Expand Sidebar';
+            sidebarToggleIcon.classList.remove('fa-chevron-left');
+            sidebarToggleIcon.classList.add('fa-chevron-right');
+            closeSidebarMobile();
+        } else {
+            sidebarToggle.title = 'Collapse Sidebar';
+            sidebarToggleIcon.classList.remove('fa-chevron-right');
+            sidebarToggleIcon.classList.add('fa-chevron-left');
+            if(window.innerWidth <= 800) {
+                sidebar.classList.add('open');
+                sidebarOverlay.style.display = 'block';
+            }
+        }
+    });
+    if(sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', function() {
+            closeSidebarMobile();
+        });
+    }
+    window.addEventListener('resize', function() {
+        if(window.innerWidth > 800) {
+            sidebar.classList.remove('open');
+            sidebarOverlay.style.display = 'none';
+        }
+    });
+});
+</script>
+</body>
+</html>

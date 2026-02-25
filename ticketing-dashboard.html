@@ -1,0 +1,1565 @@
+    <div class="zendesk-dashboard">
+        <div class="zd-header">
+            <div class="zd-title">Zendesk Support</div>
+            <div class="zd-tabs">
+                <span class="zd-tab active">Tickets</span>
+                <span class="zd-tab">Efficiency</span>
+                <span class="zd-tab">Assignee activity</span>
+                <span class="zd-tab">Agent updates</span>
+                <span class="zd-tab">Unsolved tickets</span>
+                <span class="zd-tab">Backlog</span>
+                <span class="zd-tab">Satisfaction</span>
+                <span class="zd-tab">SLAs</span>
+            </div>
+        </div>
+        <div class="zd-filterbar">
+            <div class="zd-filter zd-filter-time">
+                <label>Time</label>
+                <select><option>This month</option></select>
+            </div>
+            <div class="zd-filter"><select><option>Ticket group</option></select></div>
+            <div class="zd-filter"><select><option>Ticket brand</option></select></div>
+            <div class="zd-filter"><select><option>Ticket channel</option></select></div>
+            <div class="zd-filter"><select><option>Ticket form</option></select></div>
+            <div class="zd-filter"><select><option>Submitter role</option></select></div>
+            <div class="zd-filter"><select><option>Requester orga...</option></select></div>
+            <div class="zd-filter zd-filter-date">Currently viewing: <b>2/1/2026 — 2/20/2026</b></div>
+        </div>
+        <div class="zd-summary-row">
+            <div class="zd-summary-box"><div class="zd-summary-label">Created tickets</div><div class="zd-summary-value" id="createdTickets">0</div></div>
+            <div class="zd-summary-box"><div class="zd-summary-label">Unsolved tickets</div><div class="zd-summary-value" id="unsolvedTickets">0</div></div>
+            <div class="zd-summary-box"><div class="zd-summary-label">Solved tickets</div><div class="zd-summary-value" id="solvedTickets">0</div></div>
+            <div class="zd-summary-box"><div class="zd-summary-label">One-touch tickets</div><div class="zd-summary-value" id="oneTouchTickets">0%</div></div>
+            <div class="zd-summary-box"><div class="zd-summary-label">Reopened tickets</div><div class="zd-summary-value" id="reopenedTickets">0%</div></div>
+        </div>
+        <div class="zd-charts-row">
+            <div class="zd-chart-box">
+                <div class="zd-chart-title">Tickets created by hour</div>
+                <canvas id="ticketsByHourChart" height="180"></canvas>
+            </div>
+            <div class="zd-chart-box">
+                <div class="zd-chart-title">Average tickets created by day of week</div>
+                <canvas id="ticketsByDayChart" height="180"></canvas>
+            </div>
+        </div>
+    </div>
+                <style>
+                    .zendesk-dashboard {
+                        max-width: 1100px;
+                        margin: 32px auto;
+                        background: #fff;
+                        border-radius: 12px;
+                        box-shadow: 0 4px 24px rgba(102,126,234,0.08);
+                        padding: 0 0 32px 0;
+                    }
+                    .zd-header {
+                        padding: 32px 32px 0 32px;
+                    }
+                    .zd-title {
+                        font-size: 22px;
+                        font-weight: 700;
+                        color: #444;
+                        margin-bottom: 12px;
+                    }
+                    .zd-tabs {
+                        display: flex;
+                        gap: 24px;
+                        font-size: 15px;
+                        color: #888;
+                        margin-bottom: 18px;
+                    }
+                    .zd-tab {
+                        padding: 6px 12px;
+                        border-radius: 6px 6px 0 0;
+                        cursor: pointer;
+                    }
+                    .zd-tab.active {
+                        background: #f5f7fa;
+                        color: #667eea;
+                        font-weight: 600;
+                    }
+                    .zd-filterbar {
+                        display: flex;
+                        gap: 12px;
+                        align-items: center;
+                        padding: 0 32px 0 32px;
+                        margin-bottom: 18px;
+                    }
+                    .zd-filter label {
+                        font-size: 13px;
+                        color: #888;
+                        margin-right: 4px;
+                    }
+                    .zd-filter select {
+                        padding: 4px 10px;
+                        border-radius: 5px;
+                        border: 1px solid #ddd;
+                        font-size: 14px;
+                        background: #f5f7fa;
+                    }
+                    .zd-filter-date {
+                        margin-left: auto;
+                        font-size: 13px;
+                        color: #444;
+                    }
+                    .zd-summary-row {
+                        display: flex;
+                        gap: 18px;
+                        padding: 0 32px;
+                        margin-bottom: 18px;
+                    }
+                    .zd-summary-box {
+                        flex: 1;
+                        background: #f5f7fa;
+                        border-radius: 10px;
+                        padding: 18px 0 10px 0;
+                        text-align: center;
+                        box-shadow: 0 2px 8px rgba(102,126,234,0.04);
+                    }
+                    .zd-summary-label {
+                        font-size: 13px;
+                        color: #888;
+                        margin-bottom: 6px;
+                    }
+                    .zd-summary-value {
+                        font-size: 28px;
+                        font-weight: 700;
+                        color: #222;
+                    }
+                    .zd-charts-row {
+                        display: flex;
+                        gap: 24px;
+                        padding: 0 32px;
+                    }
+                    .zd-chart-box {
+                        flex: 1;
+                        background: #f9fafc;
+                        border-radius: 12px;
+                        box-shadow: 0 2px 8px rgba(102,126,234,0.06);
+                        padding: 24px 18px 18px 18px;
+                    }
+                    .zd-chart-title {
+                        font-size: 15px;
+                        font-weight: 600;
+                        color: #667eea;
+                        margin-bottom: 12px;
+                    }
+                    @media (max-width: 900px) {
+                        .zd-charts-row, .zd-summary-row, .zd-filterbar {
+                            flex-direction: column;
+                            gap: 12px;
+                        }
+                    }
+                </style>
+            cursor: pointer;
+        }
+
+        .sidebar-nav a:hover,
+        .sidebar-nav a.active {
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+            // Data Dummy Tiket
+            const ticketsData = [
+                {id:'ZD-001',status:'new',priority:'urgent',channel:'web',resolvedAt:null,createdAt:'2026-02-18T08:00:00Z',oneTouch:true,reopened:false},
+                {id:'ZD-002',status:'open',priority:'high',channel:'email',resolvedAt:null,createdAt:'2026-02-18T09:00:00Z',oneTouch:false,reopened:false},
+                {id:'ZD-003',status:'pending',priority:'medium',channel:'wa',resolvedAt:null,createdAt:'2026-02-17T10:00:00Z',oneTouch:false,reopened:true},
+                {id:'ZD-004',status:'solved',priority:'urgent',channel:'web',resolvedAt:'2026-02-18T12:00:00Z',createdAt:'2026-02-16T11:00:00Z',oneTouch:true,reopened:false},
+                {id:'ZD-005',status:'closed',priority:'low',channel:'email',resolvedAt:'2026-02-18T14:00:00Z',createdAt:'2026-02-15T13:00:00Z',oneTouch:false,reopened:false},
+                {id:'ZD-006',status:'on-hold',priority:'high',channel:'wa',resolvedAt:null,createdAt:'2026-02-14T15:00:00Z',oneTouch:false,reopened:false},
+                {id:'ZD-007',status:'open',priority:'urgent',channel:'web',resolvedAt:null,createdAt:'2026-02-18T16:00:00Z',oneTouch:false,reopened:true},
+                {id:'ZD-008',status:'pending',priority:'medium',channel:'email',resolvedAt:null,createdAt:'2026-02-17T17:00:00Z',oneTouch:true,reopened:false},
+                {id:'ZD-009',status:'new',priority:'high',channel:'wa',resolvedAt:null,createdAt:'2026-02-18T18:00:00Z',oneTouch:false,reopened:false},
+                {id:'ZD-010',status:'open',priority:'low',channel:'web',resolvedAt:null,createdAt:'2026-02-18T19:00:00Z',oneTouch:false,reopened:false},
+                {id:'ZD-011',status:'solved',priority:'medium',channel:'email',resolvedAt:'2026-02-18T21:00:00Z',createdAt:'2026-02-13T20:00:00Z',oneTouch:true,reopened:false},
+                {id:'ZD-012',status:'closed',priority:'high',channel:'wa',resolvedAt:'2026-02-18T23:00:00Z',createdAt:'2026-02-12T22:00:00Z',oneTouch:false,reopened:false},
+                {id:'ZD-013',status:'on-hold',priority:'low',channel:'web',resolvedAt:null,createdAt:'2026-02-11T08:00:00Z',oneTouch:false,reopened:false},
+                {id:'ZD-014',status:'pending',priority:'urgent',channel:'email',resolvedAt:null,createdAt:'2026-02-10T09:00:00Z',oneTouch:false,reopened:true},
+                {id:'ZD-015',status:'open',priority:'medium',channel:'wa',resolvedAt:null,createdAt:'2026-02-18T10:00:00Z',oneTouch:true,reopened:false},
+                {id:'ZD-016',status:'new',priority:'low',channel:'web',resolvedAt:null,createdAt:'2026-02-18T11:00:00Z',oneTouch:false,reopened:false},
+                {id:'ZD-017',status:'solved',priority:'high',channel:'email',resolvedAt:'2026-02-18T13:00:00Z',createdAt:'2026-02-09T12:00:00Z',oneTouch:true,reopened:false},
+                {id:'ZD-018',status:'closed',priority:'medium',channel:'wa',resolvedAt:'2026-02-18T15:00:00Z',createdAt:'2026-02-08T14:00:00Z',oneTouch:false,reopened:false},
+                {id:'ZD-019',status:'on-hold',priority:'urgent',channel:'web',resolvedAt:null,createdAt:'2026-02-07T16:00:00Z',oneTouch:false,reopened:true},
+                {id:'ZD-020',status:'pending',priority:'high',channel:'email',resolvedAt:null,createdAt:'2026-02-06T17:00:00Z',oneTouch:true,reopened:false}
+            ];
+            // Summary
+            document.getElementById('createdTickets').textContent = ticketsData.length;
+            document.getElementById('unsolvedTickets').textContent = ticketsData.filter(t => t.status !== 'solved' && t.status !== 'closed').length;
+            document.getElementById('solvedTickets').textContent = ticketsData.filter(t => t.status === 'solved').length;
+            document.getElementById('oneTouchTickets').textContent = Math.round((ticketsData.filter(t => t.oneTouch).length / ticketsData.length) * 100) + '%';
+            document.getElementById('reopenedTickets').textContent = Math.round((ticketsData.filter(t => t.reopened).length / ticketsData.length) * 100) + '%';
+            // Chart: Tickets created by hour
+            const hours = Array.from({length:24},(_,i)=>i);
+            const ticketsByHour = Array(24).fill(0);
+            ticketsData.forEach(t => {
+                const d = new Date(t.createdAt);
+                ticketsByHour[d.getUTCHours()]++;
+            });
+            new Chart(document.getElementById('ticketsByHourChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: hours.map(h=>h.toString()),
+                    datasets: [{
+                        label: 'Tickets',
+                        data: ticketsByHour,
+                        backgroundColor: '#667eea',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    plugins: {legend: {display: false}},
+                    scales: {y: {beginAtZero: true, ticks: {stepSize: 1, callback:v=>v+''}}},
+                    responsive: true
+                }
+            });
+            // Chart: Average tickets created by day of week
+            const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+            const ticketsByDay = Array(7).fill(0);
+            ticketsData.forEach(t => {
+                const d = new Date(t.createdAt);
+                ticketsByDay[d.getUTCDay()]++;
+            });
+            new Chart(document.getElementById('ticketsByDayChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: days,
+                    datasets: [{
+                        label: 'Tickets',
+                        data: ticketsByDay,
+                        backgroundColor: '#56ab2f',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    plugins: {legend: {display: false}},
+                    scales: {y: {beginAtZero: true, ticks: {stepSize: 1, callback:v=>v+''}}},
+                    responsive: true
+                }
+            });
+            </script>
+        }
+
+        .detail-header {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .detail-header h2 {
+            font-size: 16px;
+            color: #333;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .detail-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .detail-field {
+            margin-bottom: 20px;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #999;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            font-size: 14px;
+            color: #333;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 6px;
+        }
+
+        .detail-actions {
+            padding: 20px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #5568d3;
+        }
+
+        .btn-secondary {
+            background-color: #f0f0f0;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            background-color: #e8e8e8;
+        }
+
+        .select-field {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+            background-color: white;
+        }
+
+        /* Stats Dashboard */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            padding: 20px;
+            background: white;
+            margin: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .stat-card {
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card.urgent {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+        }
+
+        .stat-card.open {
+            background: linear-gradient(135deg, #ffa502 0%, #ff6b9d 100%);
+            color: white;
+        }
+
+        .stat-card.pending {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .stat-card.resolved {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+            color: white;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            padding: 20px;
+            margin: 0 20px 20px 20px;
+            align-items: start;
+        }
+
+        .chart-card {
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .chart-card canvas {
+            width: 100% !important;
+            height: 180px !important;
+        }
+
+        .chart-card { cursor: pointer; }
+
+        .chart-summary {
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .detail-panel {
+                width: 350px;
+            }
+
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                display: flex;
+                gap: 20px;
+                padding: 15px;
+                height: auto;
+            }
+
+            .sidebar-nav {
+                display: flex;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+
+            .content {
+                flex-direction: column;
+            }
+
+            .detail-panel {
+                width: 100%;
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 50%;
+                margin: 0;
+                border-radius: 12px 12px 0 0;
+                border-left: none;
+                border-top: 1px solid #e0e0e0;
+                margin: 0;
+            }
+
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .header-right {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .search-box input {
+                width: 100%;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #bbb;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-logo">
+                🎫 Prototype Ticketing RRFX
+            </div>
+            <ul class="sidebar-nav">
+                <li><a href="#" class="nav-link active" data-view="dashboard">📊 Dashboard</a></li>
+                <li><a href="#" class="nav-link" data-view="tickets">🎯 Tickets</a></li>
+                <li><a href="#" class="nav-link" data-view="agents">👥 Agents</a></li>
+                <li><a href="#" class="nav-link" data-view="reports">📈 Reports</a></li>
+                <li><a href="#" class="nav-link" data-view="settings">⚙️ Settings</a></li>
+            </ul>
+        </div>
+
+        <!-- Agents View (hidden by default) -->
+        <div id="agentsView" style="display:none; padding: 30px;">
+            <h2 style="margin-bottom: 24px;">Daftar Agent Customer Service</h2>
+            <div id="agentList" style="background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 24px; max-width: 400px;">
+                <ul style="list-style:none; padding:0; margin:0;">
+                    <li style="padding:12px 0; border-bottom:1px solid #eee; font-size:16px;">Sarah Johnson</li>
+                    <li style="padding:12px 0; border-bottom:1px solid #eee; font-size:16px;">Mike Chen</li>
+                    <li style="padding:12px 0; border-bottom:1px solid #eee; font-size:16px;">Lisa Williams</li>
+                    <li style="padding:12px 0; border-bottom:1px solid #eee; font-size:16px;">John Smith</li>
+                    <li style="padding:12px 0; font-size:16px;">Rina Putri</li>
+                </ul>
+            </div>
+        </div>
+        <div id="reportsView" style="display:none; padding: 30px;">
+            <h2 style="margin-bottom: 24px;">Summary Tiket</h2>
+            <div id="ticketSummaryTable" style="background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 24px; max-width: 600px; margin-bottom: 24px;">
+                <!-- Table will be rendered here -->
+            </div>
+            <div style="display: flex; gap: 16px;">
+                <button class="btn btn-primary" onclick="exportSummaryExcel()">Export Excel</button>
+                <button class="btn btn-secondary" onclick="exportSummaryPDF()">Export PDF</button>
+            </div>
+        </div>
+        <div id="settingsView" style="display:none; padding: 30px; max-width: 500px;">
+            <h2 style="margin-bottom: 24px;">Pengaturan Otomatisasi Tiket</h2>
+            <form id="settingsForm" style="background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 24px;">
+                <div style="margin-bottom: 20px;">
+                    <label for="autoCloseHours" style="font-weight:600;">Tiket otomatis close setelah (jam):</label><br>
+                    <input type="number" id="autoCloseHours" name="autoCloseHours" min="1" max="168" value="24" style="margin-top:8px; padding:8px; width:80px; border-radius:6px; border:1px solid #ddd;">
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label for="autoUpdateStatus" style="font-weight:600;">Update status tiket otomatis:</label><br>
+                    <select id="autoUpdateStatus" name="autoUpdateStatus" style="margin-top:8px; padding:8px; border-radius:6px; border:1px solid #ddd;">
+                        <option value="off">Tidak Aktif</option>
+                        <option value="pending">Auto Pending jika tidak ada respon agent</option>
+                        <option value="closed">Auto Close jika status pending lebih dari X jam</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label for="pendingHours" style="font-weight:600;">Jika auto close, berapa jam status pending?</label><br>
+                    <input type="number" id="pendingHours" name="pendingHours" min="1" max="168" value="48" style="margin-top:8px; padding:8px; width:80px; border-radius:6px; border:1px solid #ddd;">
+                </div>
+                <button type="button" class="btn btn-primary" onclick="saveSettings()">Simpan Pengaturan</button>
+            </form>
+            <div id="settingsSavedMsg" style="color:green; margin-top:16px; display:none;">Pengaturan berhasil disimpan!</div>
+        </div>
+            </ul>
+        </div>
+
+        <!-- Main Content: Dashboard Summary Only -->
+        <div class="main-content" id="dashboardView">
+            <div class="header">
+                <h1>Dashboard</h1>
+                <div class="header-right">
+                    <div class="user-profile">
+                        <span>John Doe</span>
+                        <div class="avatar">JD</div>
+                    </div>
+                </div>
+            </div>
+            <div class="charts-container">
+                <div class="chart-card">
+                    <h3 style="margin-bottom:10px; font-size:14px;">Status Distribution</h3>
+                    <canvas id="statusChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3 style="margin-bottom:10px; font-size:14px;">Channel Distribution</h3>
+                    <canvas id="channelChart"></canvas>
+                </div>
+            </div>
+            <div class="stats-container">
+                <div class="stat-card" style="background: linear-gradient(135deg, #ffe600 0%, #fffbe6 100%); color: #333;">
+                    <div class="stat-number" id="newCount">0</div>
+                    <div class="stat-label">New</div>
+                </div>
+                <div class="stat-card open">
+                    <div class="stat-number" id="openCount">0</div>
+                    <div class="stat-label">Open</div>
+                </div>
+                <div class="stat-card pending">
+                    <div class="stat-number" id="pendingCount">0</div>
+                    <div class="stat-label">Pending</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%); color: white;">
+                    <div class="stat-number" id="resolvedCount">0</div>
+                    <div class="stat-label">Resolved</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #222 0%, #444 100%); color: white;">
+                    <div class="stat-number" id="closedCount">0</div>
+                    <div class="stat-label">Closed</div>
+                </div>
+        </div>
+
+        <!-- Ticket View (hidden by default) -->
+        <div id="ticketView" style="display:none;">
+            <div class="header">
+                <h1 style="font-size:28px; font-weight:700;">Dashboard</h1>
+                <div class="header-right">
+                    <div class="user-profile">
+                        <span style="font-size:16px;">John Doe</span>
+                        <div class="avatar">JD</div>
+                    </div>
+                </div>
+            </div>
+            <div class="dashboard-grid" style="display:grid; grid-template-columns: 2fr 1fr; gap:32px; padding:32px;">
+                <div>
+                    <div class="chart-card" style="margin-bottom:32px;">
+                        <h3 style="margin-bottom:16px; font-size:18px; font-weight:600; color:#667eea;">Status Tiket</h3>
+                        <canvas id="statusChart" height="220"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3 style="margin-bottom:16px; font-size:18px; font-weight:600; color:#764ba2;">Channel Tiket</h3>
+                        <canvas id="channelChart" height="220"></canvas>
+                    </div>
+                </div>
+                <div>
+                    <div class="stats-container" style="display:flex; flex-direction:column; gap:18px;">
+                        <div class="stat-card" style="background: linear-gradient(135deg, #ffe600 0%, #fffbe6 100%); color: #333;">
+                            <div class="stat-number" id="newCount">0</div>
+                            <div class="stat-label">New</div>
+                        </div>
+                        <div class="stat-card open">
+                            <div class="stat-number" id="openCount">0</div>
+                            <div class="stat-label">Open</div>
+                        </div>
+                        <div class="stat-card pending">
+                            <div class="stat-number" id="pendingCount">0</div>
+                            <div class="stat-label">Pending</div>
+                        </div>
+                        <div class="stat-card" style="background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%); color: white;">
+                            <div class="stat-number" id="resolvedCount">0</div>
+                            <div class="stat-label">Resolved</div>
+                        </div>
+                        <div class="stat-card" style="background: linear-gradient(135deg, #222 0%, #444 100%); color: white;">
+                            <div class="stat-number" id="closedCount">0</div>
+                            <div class="stat-label">Closed</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+                <!-- Detail Panel -->
+                <div class="detail-panel" id="detailPanel">
+                    <div class="detail-header">
+                        <h2>Ticket Details</h2>
+                        <button class="close-btn" onclick="closeDetailPanel()">✕</button>
+                    </div>
+                    <div class="detail-content" id="detailContent"></div>
+                    <div class="detail-actions">
+                        <select class="select-field" id="statusSelect" onchange="updateTicketStatus()">
+                            <option value="">Change Status...</option>
+                            <option value="new">New</option>
+                            <option value="open">Open</option>
+                            <option value="pending">Pending</option>
+                            <option value="resolved">Resolved</option>
+                            <option value="closed">Closed</option>
+                        </select>
+                        <select class="select-field" id="assignSelect" onchange="updateTicketAssignee()">
+                            <option value="">Assign to...</option>
+                            <option value="sarah">Sarah Johnson</option>
+                            <option value="mike">Mike Chen</option>
+                            <option value="lisa">Lisa Williams</option>
+                            <option value="john">John Smith</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="addReply()">Add Reply</button>
+                        <button class="btn btn-secondary" onclick="closeTicket()">Close Ticket</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Data Dummy Tiket
+        let ticketsData = [
+            {id: 'TCK-001', subject: 'Login error', status: 'new', priority: 'urgent', channel: 'web', assignee: 'Andi', createdAt: '2026-02-18T08:00:00Z', resolvedAt: null},
+            {id: 'TCK-002', subject: 'Reset password', status: 'open', priority: 'high', channel: 'email', assignee: 'Budi', createdAt: '2026-02-18T09:00:00Z', resolvedAt: null},
+            {id: 'TCK-003', subject: 'Tidak bisa akses fitur', status: 'pending', priority: 'medium', channel: 'wa', assignee: 'Citra', createdAt: '2026-02-17T10:00:00Z', resolvedAt: null},
+            {id: 'TCK-004', subject: 'Permintaan refund', status: 'solved', priority: 'urgent', channel: 'web', assignee: 'Dewi', createdAt: '2026-02-16T11:00:00Z', resolvedAt: '2026-02-18T12:00:00Z'},
+            {id: 'TCK-005', subject: 'Update data profil', status: 'closed', priority: 'low', channel: 'email', assignee: 'Eka', createdAt: '2026-02-15T13:00:00Z', resolvedAt: '2026-02-18T14:00:00Z'},
+            {id: 'TCK-006', subject: 'Akun terblokir', status: 'on-hold', priority: 'high', channel: 'wa', assignee: 'Fajar', createdAt: '2026-02-14T15:00:00Z', resolvedAt: null},
+            {id: 'TCK-007', subject: 'Gagal pembayaran', status: 'open', priority: 'urgent', channel: 'web', assignee: 'Gina', createdAt: '2026-02-18T16:00:00Z', resolvedAt: null},
+            {id: 'TCK-008', subject: 'Permintaan invoice', status: 'pending', priority: 'medium', channel: 'email', assignee: 'Hadi', createdAt: '2026-02-17T17:00:00Z', resolvedAt: null},
+            {id: 'TCK-009', subject: 'Laporan bug', status: 'new', priority: 'high', channel: 'wa', assignee: 'Ika', createdAt: '2026-02-18T18:00:00Z', resolvedAt: null},
+            {id: 'TCK-010', subject: 'Permintaan fitur baru', status: 'open', priority: 'low', channel: 'web', assignee: 'Joko', createdAt: '2026-02-18T19:00:00Z', resolvedAt: null},
+            {id: 'TCK-011', subject: 'Kendala notifikasi', status: 'solved', priority: 'medium', channel: 'email', assignee: 'Kiki', createdAt: '2026-02-13T20:00:00Z', resolvedAt: '2026-02-18T21:00:00Z'},
+            {id: 'TCK-012', subject: 'Akses dibatasi', status: 'closed', priority: 'high', channel: 'wa', assignee: 'Lina', createdAt: '2026-02-12T22:00:00Z', resolvedAt: '2026-02-18T23:00:00Z'},
+            {id: 'TCK-013', subject: 'Permintaan pelatihan', status: 'on-hold', priority: 'low', channel: 'web', assignee: 'Mira', createdAt: '2026-02-11T08:00:00Z', resolvedAt: null},
+            {id: 'TCK-014', subject: 'Koneksi lambat', status: 'pending', priority: 'urgent', channel: 'email', assignee: 'Nina', createdAt: '2026-02-10T09:00:00Z', resolvedAt: null},
+            {id: 'TCK-015', subject: 'Gagal upload dokumen', status: 'open', priority: 'medium', channel: 'wa', assignee: 'Oki', createdAt: '2026-02-18T10:00:00Z', resolvedAt: null},
+            {id: 'TCK-016', subject: 'Permintaan upgrade', status: 'new', priority: 'low', channel: 'web', assignee: 'Putri', createdAt: '2026-02-18T11:00:00Z', resolvedAt: null},
+            {id: 'TCK-017', subject: 'Kesalahan tagihan', status: 'solved', priority: 'high', channel: 'email', assignee: 'Qori', createdAt: '2026-02-09T12:00:00Z', resolvedAt: '2026-02-18T13:00:00Z'},
+            {id: 'TCK-018', subject: 'Permintaan data', status: 'closed', priority: 'medium', channel: 'wa', assignee: 'Rina', createdAt: '2026-02-08T14:00:00Z', resolvedAt: '2026-02-18T15:00:00Z'},
+            {id: 'TCK-019', subject: 'Kendala login', status: 'on-hold', priority: 'urgent', channel: 'web', assignee: 'Sari', createdAt: '2026-02-07T16:00:00Z', resolvedAt: null},
+            {id: 'TCK-020', subject: 'Permintaan penghapusan akun', status: 'pending', priority: 'high', channel: 'email', assignee: 'Tio', createdAt: '2026-02-06T17:00:00Z', resolvedAt: null}
+        ];
+            {
+                id: '#TK007',
+                    subject: 'Slow query performance in reports',
+                    status: 'open',
+                    priority: 'high',
+                    channel: 'web',
+                    assignee: 'Mike Chen',
+                customer: 'Analytics Plus',
+                created: '3h ago',
+                createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000),
+                resolvedAt: null,
+                updated: '2h ago',
+                description: 'Report generation takes over 5 minutes for large datasets.',
+                messages: [
+                    { author: 'Customer', time: '3h ago', text: 'Reports are running slow' }
+                ]
+            },
+            {
+                id: '#TK008',
+                    subject: 'SSL certificate expiring soon',
+                    status: 'pending',
+                    priority: 'normal',
+                    channel: 'email',
+                    assignee: 'Lisa Williams',
+                customer: 'SecureHost',
+                created: '6h ago',
+                createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
+                resolvedAt: null,
+                updated: '30m ago',
+                description: 'SSL certificate for api.example.com expires in 7 days.',
+                messages: [
+                    { author: 'System', time: '6h ago', text: 'Certificate expiration warning' }
+                ]
+            },
+            {
+                id: '#TK009',
+                    subject: 'User export feature not working',
+                    status: 'new',
+                    priority: 'normal',
+                    channel: 'web',
+                    assignee: 'Sarah Johnson',
+                customer: 'DataFlow Systems',
+                created: '45m ago',
+                createdAt: new Date(Date.now() - 45 * 60 * 1000),
+                resolvedAt: null,
+                updated: '45m ago',
+                description: 'CSV export generates empty file when trying to export user list.',
+                messages: [
+                    { author: 'Customer', time: '45m ago', text: 'Export button not working' }
+                ]
+            },
+            {
+                id: '#TK010',
+                    subject: 'Mobile app crash on iOS',
+                    status: 'open',
+                    priority: 'urgent',
+                    channel: 'wa',
+                    assignee: 'John Smith',
+                customer: 'MobileFirst',
+                created: '1h ago',
+                createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
+                resolvedAt: null,
+                updated: '15m ago',
+                description: 'iOS app crashes when accessing settings page on version 2.3.1.',
+                messages: [
+                    { author: 'Customer', time: '1h ago', text: 'App keeps crashing' },
+                    { author: 'John Smith', time: '50m ago', text: 'Can you provide your iOS version?' }
+                ]
+            },
+            {
+                id: '#TK011',
+                    subject: 'Two-factor authentication setup issue',
+                    status: 'pending',
+                    priority: 'high',
+                    channel: 'email',
+                    assignee: 'Lisa Williams',
+                customer: 'SecureFlow',
+                created: '3h ago',
+                createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000),
+                resolvedAt: null,
+                updated: '1h 30m ago',
+                description: 'Users unable to complete 2FA setup, authentication code not being sent.',
+                messages: [
+                    { author: 'Customer', time: '3h ago', text: '2FA codes not arriving' }
+                ]
+            },
+            {
+                id: '#TK012',
+                    subject: 'Bulk import feature request',
+                    status: 'new',
+                    priority: 'low',
+                    channel: 'web',
+                    assignee: 'Mike Chen',
+                customer: 'EnterprisePlus',
+                created: '2h ago',
+                createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
+                resolvedAt: null,
+                updated: '2h ago',
+                description: 'Request to add bulk import functionality for customer data via Excel.',
+                messages: [
+                    { author: 'Customer', time: '2h ago', text: 'Need bulk import feature' }
+                ]
+            },
+            {
+                id: '#TK013',
+                    subject: 'Server timeout during peak hours',
+                    status: 'open',
+                    priority: 'urgent',
+                    channel: 'web',
+                    assignee: 'Mike Chen',
+                customer: 'HighTraffic Inc',
+                created: '2h 30m ago',
+                createdAt: new Date(Date.now() - 2.5 * 60 * 60 * 1000),
+                resolvedAt: null,
+                updated: '25m ago',
+                description: 'Application server timing out when processing requests between 12-2 PM.',
+                messages: [
+                    { author: 'Customer', time: '2h 30m ago', text: 'Experiencing timeouts' }
+                ]
+            },
+            {
+                id: '#TK014',
+                    subject: 'Invoice generation incorrect totals',
+                    status: 'pending',
+                    priority: 'high',
+                    channel: 'email',
+                    assignee: 'Sarah Johnson',
+                customer: 'BillingMasters',
+                created: '4h ago',
+                createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000),
+                resolvedAt: null,
+                updated: '50m ago',
+                description: 'Invoice totals are showing incorrect amounts when discounts are applied.',
+                messages: [
+                    { author: 'Customer', time: '4h ago', text: 'Invoice totals wrong' }
+                ]
+            },
+            {
+                id: '#TK015',
+                    subject: 'API rate limit documentation unclear',
+                    status: 'resolved',
+                    priority: 'low',
+                    channel: 'web',
+                    assignee: 'John Smith',
+                customer: 'DevIntegration',
+                created: '7h ago',
+                createdAt: new Date(Date.now() - 7 * 60 * 60 * 1000),
+                resolvedAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
+                updated: '2h ago',
+                description: 'API rate limit documentation needs clarification on burst limits.',
+                messages: [
+                    { author: 'Customer', time: '7h ago', text: 'API docs unclear' }
+                ]
+            },
+            {
+                id: '#TK016',
+                    subject: 'Dashboard widget customization',
+                    status: 'new',
+                    priority: 'normal',
+                    channel: 'web',
+                    assignee: 'Unassigned',
+                customer: 'Analytics Pro',
+                created: '1h 15m ago',
+                createdAt: new Date(Date.now() - 75 * 60 * 1000),
+                resolvedAt: null,
+                updated: '1h 15m ago',
+                description: 'Request to add ability to customize dashboard widget order and visibility.',
+                messages: [
+                    { author: 'Customer', time: '1h 15m ago', text: 'Want custom dashboard' }
+                ]
+            },
+            {
+                id: '#TK017',
+                    subject: 'Webhook delivery failures',
+                    status: 'open',
+                    priority: 'high',
+                    channel: 'email',
+                    assignee: 'Lisa Williams',
+                customer: 'WebhookUsers',
+                created: '5h ago',
+                createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000),
+                resolvedAt: null,
+                updated: '1h 20m ago',
+                description: 'Webhooks not being delivered to certain endpoints, status shows pending.',
+                messages: [
+                    { author: 'Customer', time: '5h ago', text: 'Webhooks failing' }
+                ]
+            },
+            {
+                id: '#TK018',
+                    subject: 'Password reset email not received',
+                    status: 'pending',
+                    priority: 'normal',
+                    channel: 'email',
+                    assignee: 'Sarah Johnson',
+                customer: 'MailFlow',
+                created: '3h 45m ago',
+                createdAt: new Date(Date.now() - 225 * 60 * 1000),
+                resolvedAt: null,
+                updated: '1h 10m ago',
+                description: 'Users report not receiving password reset emails within 5 minutes.',
+                messages: [
+                    { author: 'Customer', time: '3h 45m ago', text: 'Reset email missing' }
+                ]
+            },
+            {
+                id: '#TK019',
+                    subject: 'System backup storage full',
+                    status: 'open',
+                    priority: 'urgent',
+                    channel: 'wa',
+                    assignee: 'Mike Chen',
+                customer: 'BackupSystems',
+                created: '1h 30m ago',
+                createdAt: new Date(Date.now() - 90 * 60 * 1000),
+                resolvedAt: null,
+                updated: '20m ago',
+                description: 'Backup storage at 95% capacity, automated cleanup not running.',
+                messages: [
+                    { author: 'System', time: '1h 30m ago', text: 'Storage alert: 95% full' }
+                ]
+            },
+            {
+                id: '#TK020',
+                    subject: 'User profile picture upload limit',
+                    status: 'new',
+                    priority: 'low',
+                    channel: 'web',
+                    assignee: 'John Smith',
+                customer: 'SocialConnect',
+                created: '55m ago',
+                createdAt: new Date(Date.now() - 55 * 60 * 1000),
+                resolvedAt: null,
+                updated: '55m ago',
+                description: 'Users requesting higher file size limit for profile picture uploads (currently 2MB).',
+                messages: [
+                    { author: 'Customer', time: '55m ago', text: 'Profile pic limit too low' }
+                ]
+            }
+        ];
+
+        // Clean up: remove empty ticket entries, keep only 20 valid tickets
+        ticketsData = ticketsData.filter(t => t && t.id);
+
+        let currentFilter = 'all';
+        let currentTicket = null;
+        let statusChart = null;
+        let channelChart = null;
+
+        // Update status labels and colors
+        const statusLabels = ['new','open','pending','on-hold','solved','closed'];
+        const statusDefinitions = {
+            'new': 'Tiket belum ditangani oleh agent dan belum ada tindakan yang dilakukan.',
+            'open': 'Tiket telah di-assign ke agent dan sedang dalam proses penanganan.',
+            'pending': 'Agent menunggu informasi tambahan dari requester atau customer.',
+            'on-hold': 'Agent menunggu informasi atau tindakan dari pihak lain selain requester.',
+            'solved': 'Agent telah memberikan solusi dan tiket dianggap selesai.',
+            'closed': 'Tiket telah ditutup secara otomatis oleh sistem dan tidak dapat dibuka kembali.'
+        };
+        const statusColors = {
+            'new': '#ffe600', // yellow
+            'open': '#ff3b3b', // red
+            'pending': '#667eea', // blue
+            'on-hold': '#444', // dark gray
+            'solved': '#a8a8a8', // light gray
+            'closed': '#222', // black
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
+            setupReportsMenu();
+
+            // Initialize charts
+                    function setupReportsMenu() {
+                        // Show/hide reports view (now handled in nav-link click)
+                        // Only render summary table when Reports menu is shown
+                        document.querySelectorAll('.nav-link').forEach(link => {
+                            link.addEventListener('click', (e) => {
+                                if (link.dataset.view === 'reports') {
+                                    renderTicketSummaryTable();
+                                }
+                            });
+                        });
+                    }
+
+                    function renderTicketSummaryTable() {
+                        // Count tickets by status
+                        const summary = {};
+                        ticketsData.forEach(t => {
+                            summary[t.status] = (summary[t.status] || 0) + 1;
+                        });
+                        let html = '<table style="width:100%; border-collapse:collapse;">';
+                        html += '<tr style="background:#f3f4f6;"><th style="text-align:left; padding:8px;">Status</th><th style="text-align:right; padding:8px;">Jumlah</th></tr>';
+                        Object.entries(summary).forEach(([status, count]) => {
+                            html += `<tr><td style="padding:8px;">${status.charAt(0).toUpperCase() + status.slice(1)}</td><td style="text-align:right; padding:8px;">${count}</td></tr>`;
+                        });
+                        html += `<tr style="font-weight:bold;"><td style="padding:8px;">Total</td><td style="text-align:right; padding:8px;">${ticketsData.length}</td></tr>`;
+                        html += '</table>';
+                        document.getElementById('ticketSummaryTable').innerHTML = html;
+                    }
+
+                    function exportSummaryExcel() {
+                        // Export summary as CSV (Excel compatible)
+                        const summary = {};
+                        ticketsData.forEach(t => {
+                            summary[t.status] = (summary[t.status] || 0) + 1;
+                        });
+                        let csv = 'Status,Jumlah\n';
+                        Object.entries(summary).forEach(([status, count]) => {
+                            csv += `${status},${count}\n`;
+                        });
+                        csv += `Total,${ticketsData.length}\n`;
+                        const blob = new Blob([csv], { type: 'text/csv' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'ticket-summary.csv';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    }
+
+                    function exportSummaryPDF() {
+                        // Simple: open print dialog for now (user can save as PDF)
+                        const printContents = document.getElementById('ticketSummaryTable').innerHTML;
+                        const win = window.open('', '', 'width=800,height=600');
+                        win.document.write('<html><head><title>Summary Tiket</title></head><body>');
+                        win.document.write('<h2>Summary Tiket</h2>');
+                        win.document.write(printContents);
+                        win.document.write('</body></html>');
+                        win.document.close();
+                        win.print();
+                    }
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            statusChart = new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: statusLabels.map(l => l.charAt(0).toUpperCase() + l.slice(1)),
+                    datasets: [{
+                        data: statusLabels.map(l => ticketsData.filter(t => t.status === l).length),
+                        backgroundColor: statusLabels.map(l => statusColors[l])
+                    }]
+                },
+                options: {responsive: true, maintainAspectRatio: false}
+            });
+
+            const channelCtx = document.getElementById('channelChart').getContext('2d');
+            channelChart = new Chart(channelCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['web','email','wa'],
+                    datasets: [{
+                        label: 'Tickets',
+                        data: [0,0,0],
+                        // Brighter channel colors
+                        backgroundColor: ['#2563eb','#7c3aed','#f97316']
+                    }]
+                },
+                options: {responsive: true, maintainAspectRatio: false, scales: {y: {beginAtZero: true}}}
+            });
+
+            // Chart interaction: clicking status slice filters tickets by status
+            statusChart.canvas.addEventListener('click', (evt) => {
+                const points = statusChart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, true);
+                if (points && points.length) {
+                    const idx = points[0].index;
+                    const label = statusChart.data.labels[idx].toLowerCase();
+                    // set filter buttons
+                    currentFilter = label;
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === label));
+                    renderTickets(ticketsData);
+                    updateSummaryFor(ticketsData.filter(t => t.status === label));
+                } else {
+                    // clicked outside slice: reset
+                    currentFilter = 'all';
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === 'all'));
+                    renderTickets(ticketsData);
+                    updateSummaryFor(ticketsData);
+                }
+            });
+
+            // Chart interaction: clicking channel bar filters tickets by channel
+            channelChart.canvas.addEventListener('click', (evt) => {
+                const points = channelChart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, true);
+                if (points && points.length) {
+                    const idx = points[0].index;
+                    const channel = channelChart.data.labels[idx];
+                    // render only tickets of that channel
+                    const filtered = ticketsData.filter(t => t.channel === channel);
+                    // unset status filter buttons
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    renderTickets(filtered);
+                    updateSummaryFor(filtered);
+                } else {
+                    renderTickets(ticketsData);
+                    updateSummaryFor(ticketsData);
+                }
+            });
+
+            // render all tickets (20 dummy tickets)
+            renderTickets(ticketsData);
+            updateStats();
+        });
+
+        function setupEventListeners() {
+            // Filter buttons (only in ticket view)
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    currentFilter = e.target.dataset.filter;
+                    renderTickets(ticketsData);
+                });
+            });
+
+            // Search (only in ticket view)
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    const filtered = ticketsData.filter(t => 
+                        t.subject.toLowerCase().includes(e.target.value.toLowerCase()) ||
+                        t.id.toLowerCase().includes(e.target.value.toLowerCase())
+                    );
+                    renderTickets(filtered);
+                });
+            }
+
+            // Navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                    // Show/hide views
+                    const view = link.dataset.view;
+                    document.getElementById('dashboardView').style.display = (view === 'dashboard') ? 'block' : 'none';
+                    const ticketView = document.getElementById('ticketView');
+                    if (ticketView) ticketView.style.display = (view === 'tickets') ? 'block' : 'none';
+                    const agentsView = document.getElementById('agentsView');
+                    if (agentsView) agentsView.style.display = (view === 'agents') ? 'block' : 'none';
+                    const reportsView = document.getElementById('reportsView');
+                    if (reportsView) reportsView.style.display = (view === 'reports') ? 'block' : 'none';
+                    const settingsView = document.getElementById('settingsView');
+                    if (settingsView) settingsView.style.display = (view === 'settings') ? 'block' : 'none';
+                        // Save settings (dummy, just UI)
+                        function saveSettings() {
+                            document.getElementById('settingsSavedMsg').style.display = 'block';
+                            setTimeout(() => {
+                                document.getElementById('settingsSavedMsg').style.display = 'none';
+                            }, 2000);
+                        }
+                });
+            });
+        }
+
+        function renderTickets(tickets) {
+            const ticketsList = document.getElementById('ticketsList');
+            ticketsList.innerHTML = '';
+            ticketsList.style.maxHeight = '420px';
+            ticketsList.style.overflowY = 'auto';
+            ticketsList.style.display = 'flex';
+            ticketsList.style.flexDirection = 'column';
+
+            const headerRow = document.createElement('div');
+            headerRow.className = 'tickets-list-header';
+            headerRow.innerHTML = `
+                <div class="ticket-cell ticket-id">ID</div>
+                <div class="ticket-cell ticket-subject">Subject</div>
+                <div class="ticket-cell ticket-status">Status</div>
+                <div class="ticket-cell ticket-priority">Priority</div>
+                <div class="ticket-cell ticket-channel">Channel</div>
+                <div class="ticket-cell ticket-assignee">Assignee</div>
+                <div class="ticket-cell ticket-created">Created</div>
+                <div class="ticket-cell ticket-resolved">Resolved</div>
+                <div class="ticket-cell ticket-duration">Duration</div>
+            `;
+            ticketsList.appendChild(headerRow);
+            ticketsList.style.backgroundColor = '#ffffff';
+            headerRow.style.display = 'flex';
+            headerRow.style.alignItems = 'center';
+            headerRow.style.minHeight = '48px';
+            headerRow.querySelectorAll('.ticket-cell').forEach(c => {
+                c.style.display = 'block';
+                c.style.flex = '1 0 auto';
+                c.style.padding = '12px 20px';
+            });
+
+            const filtered = currentFilter === 'all'
+                ? tickets
+                : tickets.filter(t => t.status === currentFilter);
+
+            if (filtered.length === 0) {
+                const noData = document.createElement('div');
+                noData.style.padding = '40px 20px';
+                noData.style.textAlign = 'center';
+                noData.style.color = '#9ca3af';
+                noData.textContent = `No tickets found`;
+                ticketsList.appendChild(noData);
+                updateSummaryFor(filtered);
+                return;
+            }
+
+            filtered.forEach(ticket => {
+                if (!ticket || !ticket.id) return;
+                const row = document.createElement('div');
+                row.className = 'ticket-row';
+                row.onclick = () => showDetailPanel(ticket);
+
+                const statusClass = `status-${ticket.status}`;
+                const statusColor = statusColors[ticket.status] || '#ccc';
+
+                // Calculate resolution time
+                let resolutionTime = '-';
+                let durationClass = '';
+                if (ticket.resolvedAt) {
+                    const diffMs = ticket.resolvedAt - ticket.createdAt;
+                    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                    const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                    resolutionTime = diffHours > 0 ? `${diffHours}h ${diffMinutes}m` : `${diffMinutes}m`;
+                    durationClass = 'duration-resolved';
+                } else if (ticket.status !== 'new' && ticket.status !== 'open' && ticket.status !== 'pending') {
+                    const diffMs = Date.now() - ticket.createdAt;
+                    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                    const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                    resolutionTime = diffHours > 0 ? `${diffHours}h ${diffMinutes}m` : `${diffMinutes}m`;
+                    durationClass = 'duration-resolved';
+                } else {
+                    const diffMs = Date.now() - ticket.createdAt;
+                    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                    const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                    resolutionTime = diffHours > 0 ? `${diffHours}h ${diffMinutes}m (pending)` : `${diffMinutes}m (pending)`;
+                    durationClass = 'duration-pending';
+                }
+
+                const createdDate = ticket.createdAt.toLocaleString('id-ID', {
+                    month: 'short',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                const resolvedDate = ticket.resolvedAt 
+                    ? ticket.resolvedAt.toLocaleString('id-ID', {
+                        month: 'short',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    })
+                    : '-';
+
+                row.innerHTML = `
+                    <div class="ticket-cell ticket-id">${ticket.id}</div>
+                    <div class="ticket-cell ticket-subject">${ticket.subject}</div>
+                    <div class="ticket-cell ticket-status">
+                        <span class="status-badge ${statusClass}" style="background:${statusColor};" title="${statusDefinitions[ticket.status] || ''}">
+                            ${ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1)}
+                        </span>
+                    </div>
+                    <div class="ticket-cell ticket-priority">
+                            <span class="priority-badge ${priorityClass}">${ticket.priority.charAt(0).toUpperCase() + ticket.priority.slice(1)}</span>
+                        </div>
+                        <div class="ticket-cell ticket-channel">${ticket.channel}</div>
+                        <div class="ticket-cell ticket-assignee">${ticket.assignee}</div>
+                    <div class="ticket-cell ticket-created">${createdDate}</div>
+                    <div class="ticket-cell ticket-resolved">${resolvedDate}</div>
+                    <div class="ticket-cell ticket-duration">
+                        <span class="${durationClass}">${resolutionTime}</span>
+                    </div>
+                `;
+
+                ticketsList.appendChild(row);
+                row.style.display = 'flex';
+                row.style.alignItems = 'center';
+                row.style.minHeight = '48px';
+                row.style.padding = '8px 0';
+                row.style.borderBottom = '1px solid #f0f0f0';
+                if ((Array.from(tickets).indexOf(ticket) % 2) === 0) row.style.backgroundColor = '#ffffff';
+                else row.style.backgroundColor = '#fbfbfd';
+                row.querySelectorAll('.ticket-cell').forEach(c => {
+                    c.style.display = 'block';
+                    c.style.flex = '1 0 auto';
+                    c.style.padding = '12px 20px';
+                });
+            });
+
+            updateSummaryFor(filtered);
+        }
+
+        function updateSummaryFor(ticketsSubset) {
+            const total = ticketsSubset.length;
+            const resolvedTickets = ticketsSubset.filter(t => t.resolvedAt && t.createdAt);
+            let avgMs = 0;
+            if (resolvedTickets.length > 0) {
+                const totalMs = resolvedTickets.reduce((sum, t) => sum + (t.resolvedAt - t.createdAt), 0);
+                avgMs = Math.round(totalMs / resolvedTickets.length);
+            }
+            const avgHours = Math.floor(avgMs / (1000 * 60 * 60));
+            const avgMinutes = Math.floor((avgMs % (1000 * 60 * 60)) / (1000 * 60));
+            const avgStr = resolvedTickets.length > 0 ? (avgHours > 0 ? `${avgHours}h ${avgMinutes}m` : `${avgMinutes}m`) : '-';
+
+            const byStatus = {};
+            ticketsSubset.forEach(t => byStatus[t.status] = (byStatus[t.status] || 0) + 1);
+            const byChannel = {};
+            ticketsSubset.forEach(t => byChannel[t.channel] = (byChannel[t.channel] || 0) + 1);
+
+            const summaryEl = document.getElementById('summaryText');
+            summaryEl.innerHTML = `
+                <div><strong>Showing:</strong> ${total} tickets</div>
+                <div><strong>Resolved:</strong> ${resolvedTickets.length}</div>
+                <div><strong>Avg Resolution Time:</strong> ${avgStr}</div>
+                <div><strong>Status Breakdown:</strong> ${Object.entries(byStatus).map(([k,v])=>`${k}: ${v}`).join(' | ')}</div>
+                <div><strong>Channel Breakdown:</strong> ${Object.entries(byChannel).map(([k,v])=>`${k}: ${v}`).join(' | ')}</div>
+            `;
+        }
+
+        function showDetailPanel(ticket) {
+            currentTicket = ticket;
+            const panel = document.getElementById('detailPanel');
+            const content = document.getElementById('detailContent');
+
+            panel.classList.add('active');
+
+            content.innerHTML = `
+                <div class="detail-field">
+                    <div class="detail-label">Ticket ID</div>
+                    <div class="detail-value">${ticket.id}</div>
+                </div>
+                <div class="detail-field">
+                    <div class="detail-label">Subject</div>
+                    <div class="detail-value">${ticket.subject}</div>
+                </div>
+                <div class="detail-field">
+                    <div class="detail-label">Customer</div>
+                    <div class="detail-value">${ticket.customer}</div>
+                </div>
+                <div class="detail-field">
+                    <div class="detail-label">Status</div>
+                    <div class="detail-value">${ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1)}</div>
+                </div>
+                <div class="detail-field">
+                    <div class="detail-label">Priority</div>
+                    <div class="detail-value">${ticket.priority.charAt(0).toUpperCase() + ticket.priority.slice(1)}</div>
+                </div>
+                <div class="detail-field">
+                    <div class="detail-label">Channel</div>
+                    <div class="detail-value">${ticket.channel}</div>
+                </div>
+                <div class="detail-field">
+                    <div class="detail-label">Assigned To</div>
+                    <div class="detail-value">${ticket.assignee}</div>
+                </div>
+                <div class="detail-field">
+                    <div class="detail-label">Created</div>
+                    <div class="detail-value">${ticket.created}</div>
+                </div>
+                <div class="detail-field">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">${ticket.description}</div>
+                </div>
+                <div class="detail-field">
+                    <div class="detail-label">Messages</div>
+                    <div style="background-color: #f9f9f9; border-radius: 6px; padding: 10px; max-height: 200px; overflow-y: auto;">
+                        ${ticket.messages.map(msg => `
+                            <div style="margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px;">
+                                <strong style="font-size: 12px; color: #667eea;">${msg.author}</strong>
+                                <div style="font-size: 11px; color: #999; margin-top: 2px;">${msg.time}</div>
+                                <div style="font-size: 13px; margin-top: 5px;">${msg.text}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            // Set current status and assignee in selects
+            document.getElementById('statusSelect').value = ticket.status;
+            document.getElementById('assignSelect').value = ticket.assignee.split(' ')[0].toLowerCase();
+        }
+
+        function closeDetailPanel() {
+            document.getElementById('detailPanel').classList.remove('active');
+            currentTicket = null;
+        }
+
+        function resetFilters() {
+            // reset filter state and search
+            currentFilter = 'all';
+            document.getElementById('searchInput').value = '';
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === 'all'));
+            renderTickets(ticketsData);
+            updateSummaryFor(ticketsData);
+        }
+
+        // live simulation removed for static 20-ticket demo
+
+        function updateTicketStatus() {
+            if (currentTicket) {
+                const newStatus = document.getElementById('statusSelect').value;
+                if (newStatus) {
+                    currentTicket.status = newStatus;
+                    if (newStatus === 'resolved' || newStatus === 'closed') {
+                        currentTicket.resolvedAt = new Date();
+                    } else {
+                        currentTicket.resolvedAt = null;
+                    }
+                    alert(`Ticket ${currentTicket.id} status updated to ${newStatus}`);
+                    closeDetailPanel();
+                    renderTickets(ticketsData);
+                    updateStats();
+                }
+            }
+        }
+
+        function updateTicketAssignee() {
+            if (currentTicket) {
+                const assigneeValue = document.getElementById('assignSelect').value;
+                const assigneeMap = {
+                    'sarah': 'Sarah Johnson',
+                    'mike': 'Mike Chen',
+                    'lisa': 'Lisa Williams',
+                    'john': 'John Smith'
+                };
+                if (assigneeValue && assigneeMap[assigneeValue]) {
+                    currentTicket.assignee = assigneeMap[assigneeValue];
+                    alert(`Ticket ${currentTicket.id} assigned to ${assigneeMap[assigneeValue]}`);
+                    closeDetailPanel();
+                    renderTickets(ticketsData);
+                }
+            }
+        }
+
+        function addReply() {
+            if (currentTicket) {
+                const reply = prompt('Enter your reply:');
+                if (reply) {
+                    currentTicket.messages.push({
+                        author: 'You',
+                        time: 'Just now',
+                        text: reply
+                    });
+                    alert('Reply added successfully');
+                    showDetailPanel(currentTicket);
+                }
+            }
+        }
+
+        function closeTicket() {
+            if (currentTicket) {
+                currentTicket.status = 'closed';
+                currentTicket.resolvedAt = new Date();
+                alert(`Ticket ${currentTicket.id} has been closed`);
+                closeDetailPanel();
+                renderTickets(ticketsData);
+                updateStats();
+            }
+        }
+
+        function updateStats() {
+            // Basic counts
+            const urgent = ticketsData.filter(t => t.priority === 'urgent' && ['new', 'open', 'pending'].includes(t.status)).length;
+            const open = ticketsData.filter(t => t.status === 'open').length;
+            const pending = ticketsData.filter(t => t.status === 'pending').length;
+            // Count resolved and closed tickets for dashboard
+            const resolvedToday = ticketsData.filter(t => (t.status === 'resolved' || t.status === 'closed') && isToday(t.resolvedAt)).length;
+
+            document.getElementById('urgentCount').textContent = urgent;
+            document.getElementById('openCount').textContent = open;
+            document.getElementById('pendingCount').textContent = pending;
+            document.getElementById('resolvedCount').textContent = resolvedToday;
+            // update total tickets count in header
+            const totalEl = document.getElementById('totalTicketsCount');
+            if (totalEl) totalEl.textContent = ticketsData.length;
+
+            // Laporan Harian, Mingguan, Bulanan
+            const now = new Date();
+            let daily = 0, weekly = 0, monthly = 0;
+            ticketsData.forEach(t => {
+                if (t.resolvedAt && (t.status === 'resolved' || t.status === 'closed')) {
+                    if (isToday(t.resolvedAt)) daily++;
+                    if (isThisWeek(t.resolvedAt)) weekly++;
+                    if (isThisMonth(t.resolvedAt)) monthly++;
+                }
+            });
+            document.getElementById('dailyReportCount').textContent = daily;
+            document.getElementById('weeklyReportCount').textContent = weekly;
+            document.getElementById('monthlyReportCount').textContent = monthly;
+
+            // Status distribution for chart
+                    // Helpers for date range
+                    function isToday(date) {
+                        if (!date) return false;
+                        const now = new Date();
+                        return date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+                    }
+                    function isThisWeek(date) {
+                        if (!date) return false;
+                        const now = new Date();
+                        const firstDayOfWeek = new Date(now);
+                        firstDayOfWeek.setDate(now.getDate() - now.getDay());
+                        firstDayOfWeek.setHours(0,0,0,0);
+                        const lastDayOfWeek = new Date(firstDayOfWeek);
+                        lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 6);
+                        lastDayOfWeek.setHours(23,59,59,999);
+                        return date >= firstDayOfWeek && date <= lastDayOfWeek;
+                    }
+                    function isThisMonth(date) {
+                        if (!date) return false;
+                        const now = new Date();
+                        return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+                    }
+            const statusLabels = ['new','open','pending','on-hold','solved','closed'];
+            const statusCounts = statusLabels.map(l => ticketsData.filter(t => t.status === l).length);
+
+            // Channel distribution
+            const channelLabels = ['web','email','wa'];
+            const channelCounts = channelLabels.map(c => ticketsData.filter(t => t.channel === c).length);
+
+            // Update charts
+            if (statusChart) {
+                statusChart.data.datasets[0].data = statusCounts;
+                statusChart.update();
+            }
+            if (channelChart) {
+                channelChart.data.datasets[0].data = channelCounts;
+                channelChart.update();
+            }
+
+            // Summary: total, resolved count, average resolution time
+            const resolvedTickets = ticketsData.filter(t => t.resolvedAt && t.createdAt);
+            let avgMs = 0;
+            if (resolvedTickets.length > 0) {
+                const totalMs = resolvedTickets.reduce((sum, t) => sum + (t.resolvedAt - t.createdAt), 0);
+                avgMs = Math.round(totalMs / resolvedTickets.length);
+            }
+            const avgHours = Math.floor(avgMs / (1000 * 60 * 60));
+            const avgMinutes = Math.floor((avgMs % (1000 * 60 * 60)) / (1000 * 60));
+            const avgStr = resolvedTickets.length > 0 ? (avgHours > 0 ? `${avgHours}h ${avgMinutes}m` : `${avgMinutes}m`) : '-';
+
+            const summaryEl = document.getElementById('summaryText');
+            summaryEl.innerHTML = `
+                <div><strong>Total Tickets:</strong> ${ticketsData.length}</div>
+                <div><strong>Resolved:</strong> ${resolvedTickets.length}</div>
+                <div><strong>Avg Resolution Time:</strong> ${avgStr}</div>
+                <div><strong>By Channel:</strong> web ${channelCounts[0]}, email ${channelCounts[1]}, wa ${channelCounts[2]}</div>
+            `;
+
+            // also log report
+            console.log(`Dashboard Report:\nUrgent Tickets: ${urgent}\nOpen Tickets: ${open}\nPending Tickets: ${pending}\nResolved Tickets: ${resolved}\nTotal Tickets: ${ticketsData.length}`);
+        }
+    </script>
+</body>
+</html>

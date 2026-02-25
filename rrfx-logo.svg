@@ -1,0 +1,9 @@
+<svg viewBox="0 0 288 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- RRFX Logo - Gold/Orange color -->
+  <!-- Left symbol -->
+  <path d="M37 48C37 37.5 45.5 29 56 29H64V41H56C51.6 41 48 44.6 48 49C48 53.4 51.6 57 56 57H64V69H56C45.5 69 37 60.5 37 50V48Z" fill="#E8A D2F"/>
+  <path d="M73 29H85C95.5 29 104 37.5 104 48V50C104 60.5 95.5 69 85 69H73V57H85C89.4 57 93 53.4 93 49C93 44.6 89.4 41 85 41H73V29Z" fill="#E8A D2F"/>
+  
+  <!-- RRFX Text -->
+  <text x="120" y="60" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="#E8A D2F">RRFX</text>
+</svg>

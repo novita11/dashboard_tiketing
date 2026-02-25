@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Tiketing Benchmark Zendesk - Admin Monitoring</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:400,600,700&display=swap">
+    <style>
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background: #f6f8fa;
+            color: #222;
+            margin: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 24px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(102,126,234,0.08);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        .header .admin-info {
+            font-size: 16px;
+            color: #444;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 32px;
+        }
+        .chart-section {
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+        .chart-card {
+            background: #f9fafc;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(102,126,234,0.06);
+            padding: 24px;
+        }
+        .chart-card h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #764ba2;
+            margin-bottom: 16px;
+        }
+        .stats-section {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border-radius: 10px;
+            padding: 20px 24px;
+            text-align: left;
+            box-shadow: 0 2px 8px rgba(102,126,234,0.08);
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        @media (max-width: 900px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Benchmark Tiketing Zendesk - Admin Monitoring</h1>
+            <div class="admin-info">
+                <span>Admin: Zendesk Team</span>
+                <span style="background:#667eea;color:#fff;padding:8px 16px;border-radius:8px;font-weight:600;">Admin</span>
+            </div>
+        </div>
+        <div class="dashboard-grid">
+            <div class="chart-section">
+                <div class="chart-card">
+                    <h3>Status Tiket Zendesk</h3>
+                    <canvas id="statusChart" height="220"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>Channel Tiket</h3>
+                    <canvas id="channelChart" height="220"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>Benchmark Resolusi Tiket</h3>
+                    <canvas id="resolutionChart" height="220"></canvas>
+                </div>
+            </div>
+            <div class="stats-section">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalTickets">0</div>
+                    <div class="stat-label">Total Tiket</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="avgResolution">-</div>
+                    <div class="stat-label">Rata-rata Resolusi</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="urgentTickets">0</div>
+                    <div class="stat-label">Tiket Urgent</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="solvedTickets">0</div>
+                    <div class="stat-label">Tiket Solved</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Data Dummy Tiket Zendesk
+        const ticketsData = [
+            {id:'ZD-001',status:'new',priority:'urgent',channel:'web',resolvedAt:null,createdAt:'2026-02-18T08:00:00Z'},
+            {id:'ZD-002',status:'open',priority:'high',channel:'email',resolvedAt:null,createdAt:'2026-02-18T09:00:00Z'},
+            {id:'ZD-003',status:'pending',priority:'medium',channel:'wa',resolvedAt:null,createdAt:'2026-02-17T10:00:00Z'},
+            {id:'ZD-004',status:'solved',priority:'urgent',channel:'web',resolvedAt:'2026-02-18T12:00:00Z',createdAt:'2026-02-16T11:00:00Z'},
+            {id:'ZD-005',status:'closed',priority:'low',channel:'email',resolvedAt:'2026-02-18T14:00:00Z',createdAt:'2026-02-15T13:00:00Z'},
+            {id:'ZD-006',status:'on-hold',priority:'high',channel:'wa',resolvedAt:null,createdAt:'2026-02-14T15:00:00Z'},
+            {id:'ZD-007',status:'open',priority:'urgent',channel:'web',resolvedAt:null,createdAt:'2026-02-18T16:00:00Z'},
+            {id:'ZD-008',status:'pending',priority:'medium',channel:'email',resolvedAt:null,createdAt:'2026-02-17T17:00:00Z'},
+            {id:'ZD-009',status:'new',priority:'high',channel:'wa',resolvedAt:null,createdAt:'2026-02-18T18:00:00Z'},
+            {id:'ZD-010',status:'open',priority:'low',channel:'web',resolvedAt:null,createdAt:'2026-02-18T19:00:00Z'},
+            {id:'ZD-011',status:'solved',priority:'medium',channel:'email',resolvedAt:'2026-02-18T21:00:00Z',createdAt:'2026-02-13T20:00:00Z'},
+            {id:'ZD-012',status:'closed',priority:'high',channel:'wa',resolvedAt:'2026-02-18T23:00:00Z',createdAt:'2026-02-12T22:00:00Z'},
+            {id:'ZD-013',status:'on-hold',priority:'low',channel:'web',resolvedAt:null,createdAt:'2026-02-11T08:00:00Z'},
+            {id:'ZD-014',status:'pending',priority:'urgent',channel:'email',resolvedAt:null,createdAt:'2026-02-10T09:00:00Z'},
+            {id:'ZD-015',status:'open',priority:'medium',channel:'wa',resolvedAt:null,createdAt:'2026-02-18T10:00:00Z'},
+            {id:'ZD-016',status:'new',priority:'low',channel:'web',resolvedAt:null,createdAt:'2026-02-18T11:00:00Z'},
+            {id:'ZD-017',status:'solved',priority:'high',channel:'email',resolvedAt:'2026-02-18T13:00:00Z',createdAt:'2026-02-09T12:00:00Z'},
+            {id:'ZD-018',status:'closed',priority:'medium',channel:'wa',resolvedAt:'2026-02-18T15:00:00Z',createdAt:'2026-02-08T14:00:00Z'},
+            {id:'ZD-019',status:'on-hold',priority:'urgent',channel:'web',resolvedAt:null,createdAt:'2026-02-07T16:00:00Z'},
+            {id:'ZD-020',status:'pending',priority:'high',channel:'email',resolvedAt:null,createdAt:'2026-02-06T17:00:00Z'}
+        ];
+        // Chart Data
+        const statusLabels = ['new','open','pending','on-hold','solved','closed'];
+        const statusColors = ['#ffe600','#ff3b3b','#667eea','#444','#56ab2f','#222'];
+        const channelLabels = ['web','email','wa'];
+        const channelColors = ['#667eea','#764ba2','#ff6b6b'];
+        // Status Chart
+        const statusCounts = statusLabels.map(l => ticketsData.filter(t => t.status === l).length);
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: statusLabels.map(l => l.charAt(0).toUpperCase() + l.slice(1)),
+                datasets: [{
+                    data: statusCounts,
+                    backgroundColor: statusColors,
+                    borderWidth: 2,
+                    hoverOffset: 16
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: {position: 'bottom'},
+                    tooltip: {enabled: true}
+                },
+                cutout: '70%',
+                responsive: true
+            }
+        });
+        // Channel Chart
+        const channelCounts = channelLabels.map(c => ticketsData.filter(t => t.channel === c).length);
+        const channelCtx = document.getElementById('channelChart').getContext('2d');
+        new Chart(channelCtx, {
+            type: 'bar',
+            data: {
+                labels: channelLabels.map(l => l.toUpperCase()),
+                datasets: [{
+                    label: 'Jumlah Tiket',
+                    data: channelCounts,
+                    backgroundColor: channelColors,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: {display: false},
+                    tooltip: {enabled: true}
+                },
+                responsive: true,
+                scales: {
+                    y: {beginAtZero: true, ticks: {stepSize: 1}}
+                }
+            }
+        });
+        // Resolution Benchmark Chart
+        const solvedTickets = ticketsData.filter(t => t.resolvedAt && t.createdAt);
+        const resolutionData = solvedTickets.map(t => {
+            const created = new Date(t.createdAt);
+            const resolved = new Date(t.resolvedAt);
+            return Math.round((resolved - created) / (1000 * 60 * 60)); // jam
+        });
+        const resolutionCtx = document.getElementById('resolutionChart').getContext('2d');
+        new Chart(resolutionCtx, {
+            type: 'line',
+            data: {
+                labels: solvedTickets.map(t => t.id),
+                datasets: [{
+                    label: 'Resolusi (jam)',
+                    data: resolutionData,
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102,126,234,0.15)',
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#764ba2'
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: {position: 'top'},
+                    tooltip: {enabled: true}
+                },
+                responsive: true,
+                scales: {
+                    y: {beginAtZero: true, title: {display:true, text:'Jam'}}
+                }
+            }
+        });
+        // Stats
+        document.getElementById('totalTickets').textContent = ticketsData.length;
+        document.getElementById('urgentTickets').textContent = ticketsData.filter(t => t.priority === 'urgent').length;
+        document.getElementById('solvedTickets').textContent = ticketsData.filter(t => t.status === 'solved').length;
+        let avg = '-';
+        if (resolutionData.length > 0) {
+            const avgHours = Math.round(resolutionData.reduce((a,b) => a+b, 0) / resolutionData.length);
+            avg = avgHours + ' jam';
+        }
+        document.getElementById('avgResolution').textContent = avg;
+    </script>
+</body>
+</html>
